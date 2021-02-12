@@ -21,6 +21,12 @@ typedef struct{
 	long *childrenPtr;
 }person;
 
+//data base manager
+typedef struct {
+	person* per;
+	int personCount;
+}db_mgr;
+
 void print_person(person* per);
 
 void main()
@@ -49,3 +55,5 @@ void print_person(person* per)
 		}
 	}
 }
+
+
