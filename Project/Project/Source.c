@@ -30,16 +30,20 @@ typedef struct {
 
 
 void print_person(person* per);
-char menu();
+//char menu();
+person* init_db(db_mgr* mgr1);
 char intAsChar(int a);
 void add_person(db_mgr* mgr);
-char* enterName();
+char* enterName(char* name);
 void arrangeId(db_mgr* mgr);
 void swapPosition(person* per1, person* per2);
 
 void main()
 {
-	
+	//debug:
+	db_mgr manager = { NULL,0 };
+	add_person(&manager);
+	free(manager.per);
 }
 
 //Prints the person's info
@@ -69,60 +73,74 @@ char intAsChar(int a) {  //puts the value of int in char
 	return b;
 }
 
-person* init_db(db_mgr* mgr1) { //check me dont know if im right  
+person* init_db(db_mgr* mgr1)
+{ //check me dont know if im right  
 	db_mgr mgr2;
-	if (mgr1->perCount > 0) {
+	if (mgr1->perCount > 0)
+	{
 		mgr2.per = (person*)malloc(mgr1->perCount * sizeof(person));
 		for (int i = 0; i < mgr1->perCount; i++) {
 			mgr2.per[i] = mgr1->per[i];
 		}
 	free(mgr1->per);
+	}
 	return mgr2.per;
-	}
 }
 
-char menu(){ //menu function returns the value that entered
-	int tmp = 1;
-	char choice;
-	while (tmp){
-		printf("Database System Menu:\n1. Add person\n2. Search a person\n3. Search parents\n4. Delete a person\n5. Get generation\n6. Print database\n7. Search by name\n8. Quit\n");
-		getchar(choice);
-		switch (choice) {
-		case '1': return choice;
-		case '2': return choice;
-		case '3': return choice;
-		case '4': return choice;
-		case '5': return choice;
-		case '6': return choice;
-		case '7': return choice;
-		case '8': return choice;
-		default: printf("error! invalid input. try again.\n");
-		}
-	}
-}
+//char menu()
+//{ //menu function returns the value that entered
+//	int tmp = 1;
+//	char choice;
+//	while (tmp){
+//		printf("Database System Menu:\n1. Add person\n2. Search a person\n3. Search parents\n4. Delete a person\n5. Get generation\n6. Print database\n7. Search by name\n8. Quit\n");
+//		scanf("%c",&choice);
+//		fseek(stdin, 0, SEEK_END);
+//		switch (choice) {
+//		case '1': return choice;
+//		case '2': return choice;
+//		case '3': return choice;
+//		case '4': return choice;
+//		case '5': return choice;
+//		case '6': return choice;
+//		case '7': return choice;
+//		case '8': return choice;
+//		default: printf("error! invalid input. try again.\n");
+//		}
+//	}
+//}
 
-void add_person(db_mgr* mgr) { //not finished
+void add_person(db_mgr* mgr)
+{ //not finished
+
+	int index = mgr->perCount; //start at 0
 	mgr->perCount++;
 	mgr->per=init_db(mgr);
-	person man;
+//	person man;
+	char* Name=NULL;
 	printf("please enter a person details:\n");
 	printf("ID: ");
-	scanf("%ld", &man.id);
-	while (man.id < 0 || man.id>9)
+//	scanf("%ld", &man.id);
+	//while (man.id < 0 || man.id>9)
+	//{
+	//	printf("invalid input. try again.");
+	//	scanf("%ld", &man.id);
+	//}
+	scanf("%ld", &mgr->per[index].id);
+	while (mgr->per[index].id < 0 || mgr->per[index].id>9)
 	{
 		printf("invalid input. try again.");
-		scanf("%ld", &man.id);
+		scanf("%ld", &mgr->per[index].id);
 	}
 	printf("please enter name: ");
-	man.name = enterName;
+	//man.name = enterName;
+	mgr->per[index].name = enterName(Name);
 	printf("please enter last name: ");
-	man.family = enterName;
+	//man.family = enterName;
+	mgr->per[index].family = enterName(Name);
 
-
-	
 
 }
-char* enterName()
+char* enterName(char* name)
 { //reading and allocating name for add_person
 	person p1;
 	char tmp[100];
@@ -151,7 +169,7 @@ void arrangeId(db_mgr* mgr)
 {
 	for (int idx = mgr->perCount -1; 0 <= idx ; idx--)
 	{
-		if (mgr->per[idx].id < mgr->per[idx-1].id )
+		if (mgr->per[idx].id < mgr->per[idx - 1].id);
 
 	}
 }
