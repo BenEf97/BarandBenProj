@@ -30,14 +30,16 @@ typedef struct {
 
 
 void print_person(person* per);
+char menu();
 char intAsChar(int a);
-
+void add_person(db_mgr* mgr);
+char* enterName();
+void arrangeId(db_mgr* mgr);
+void swapPosition(person* per1, person* per2);
 
 void main()
 {
 	
-	
-
 }
 
 //Prints the person's info
@@ -105,10 +107,11 @@ void add_person(db_mgr* mgr) { //not finished
 	person man;
 	printf("please enter a person details:\n");
 	printf("ID: ");
-	scanf("%ld", man.id);
-	while (man.id < 0) {
+	scanf("%ld", &man.id);
+	while (man.id < 0 || man.id>9)
+	{
 		printf("invalid input. try again.");
-		scanf("%ld", man.id);
+		scanf("%ld", &man.id);
 	}
 	printf("please enter name: ");
 	man.name = enterName;
@@ -119,11 +122,13 @@ void add_person(db_mgr* mgr) { //not finished
 	
 
 }
-char* enterName() { //reading and allocating name for add_person
+char* enterName()
+{ //reading and allocating name for add_person
 	person p1;
 	char tmp[100];
 	int size;
 	gets(tmp);
+	fseek(stdin, 0, SEEK_END);
 	size = srtlen(tmp);
 	p1.name = (char*)malloc(size + 1);
 	strcpy(p1.name, tmp);
@@ -140,3 +145,20 @@ char* enterName() { //reading and allocating name for add_person
 //
 //	}
 //}
+
+//function 1: id seeker
+void arrangeId(db_mgr* mgr)
+{
+	for (int idx = mgr->perCount -1; 0 <= idx ; idx--)
+	{
+		if (mgr->per[idx].id < mgr->per[idx-1].id )
+
+	}
+}
+
+void swapPosition(person* per1, person* per2)
+{
+	person temp = *per1;
+	*per1 = *per2;
+	*per2 = temp;
+}
