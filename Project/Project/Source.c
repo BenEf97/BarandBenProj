@@ -34,7 +34,7 @@ void print_person(person* per);
 person* init_db(db_mgr* mgr1);
 char intAsChar(int a);
 void add_person(db_mgr* mgr);
-char* enterName(char* name);
+char* enterName();
 void arrangeId(db_mgr* mgr);
 void swapPosition(person* per1, person* per2);
 
@@ -80,13 +80,14 @@ person* init_db(db_mgr* mgr1)
 	{
 		mgr2.per = (person*)malloc(mgr1->perCount * sizeof(person));
 		for (int i = 0; i < mgr1->perCount; i++) {
-			mgr2.per[i] = mgr1->per[i];
+			mgr2.per[i] = mgr1->per[i]; //error
 		}
 	free(mgr1->per);
 	}
 	return mgr2.per;
 }
 
+//the function didn't work so rn just wanna check without it
 //char menu()
 //{ //menu function returns the value that entered
 //	int tmp = 1;
@@ -133,14 +134,15 @@ void add_person(db_mgr* mgr)
 	}
 	printf("please enter name: ");
 	//man.name = enterName;
-	mgr->per[index].name = enterName(Name);
+	//mgr->per[index].name = enterName(Name);
 	printf("please enter last name: ");
 	//man.family = enterName;
-	mgr->per[index].family = enterName(Name);
+	//mgr->per[index].family = enterName(Name);
+	arrangeId(mgr);
 
 
 }
-char* enterName(char* name)
+char* enterName()
 { //reading and allocating name for add_person
 	person p1;
 	char tmp[100];
@@ -148,10 +150,11 @@ char* enterName(char* name)
 	gets(tmp);
 	fseek(stdin, 0, SEEK_END);
 	size = srtlen(tmp);
-	p1.name = (char*)malloc(size + 1);
+	p1.name = (char*)malloc((size + 1)*sizeof(char));
 	strcpy(p1.name, tmp);
 	return(p1.name);
 }
+
 //int arrangeId(db_mgr* mgr,int num) {
 //	int i;
 //	for (i = 0; i < mgr->perCount; i++) {
