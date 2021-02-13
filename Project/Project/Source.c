@@ -31,10 +31,11 @@ typedef struct {
 
 void print_person(person* per);
 //char menu();
-person* init_db(db_mgr* mgr1);
+//person* init_db(db_mgr* mgr1);
+void init_db(db_mgr* mgr);
 char intAsChar(int a);
 void add_person(db_mgr* mgr);
-char* enterName();
+char* enterName(char* name);
 void arrangeId(db_mgr* mgr);
 void swapPosition(person* per1, person* per2);
 
@@ -43,7 +44,10 @@ void main()
 	//debug:
 	db_mgr manager = { NULL,0 };
 	add_person(&manager);
-	free(manager.per);
+	add_person(&manager);
+	add_person(&manager);
+	for (int idx=0;idx<manager.perCount;idx++)
+	free(manager.per+idx);
 }
 
 //Prints the person's info
@@ -73,7 +77,7 @@ char intAsChar(int a) {  //puts the value of int in char
 	return b;
 }
 
-person* init_db(db_mgr* mgr1)
+void init_db(db_mgr* mgr1) //i think we should use a void
 { //check me dont know if im right  
 	db_mgr mgr2;
 	if (mgr1->perCount > 0)
@@ -84,8 +88,16 @@ person* init_db(db_mgr* mgr1)
 		}
 	free(mgr1->per);
 	}
-	return mgr2.per;
+//	return mgr2.per;
 }
+
+//void init_db (db_mgr* mgr)
+//{
+//	if (mgr->perCount > 0)
+//	{
+//		mgr->per = (person*)malloc(mgr->perCount * sizeof(person));
+//	}
+//}
 
 //the function didn't work so rn just wanna check without it
 //char menu()
@@ -115,9 +127,8 @@ void add_person(db_mgr* mgr)
 
 	int index = mgr->perCount; //start at 0
 	mgr->perCount++;
-	mgr->per=init_db(mgr);
+	init_db(mgr);
 //	person man;
-	char* Name=NULL;
 	printf("please enter a person details:\n");
 	printf("ID: ");
 //	scanf("%ld", &man.id);
@@ -127,32 +138,36 @@ void add_person(db_mgr* mgr)
 	//	scanf("%ld", &man.id);
 	//}
 	scanf("%ld", &mgr->per[index].id);
-	while (mgr->per[index].id < 0 || mgr->per[index].id>9)
+	fseek(stdin, 0, SEEK_END);
+	while (mgr->per[index].id < 0 || mgr->per[index].id > 1000000000 )
 	{
 		printf("invalid input. try again.");
 		scanf("%ld", &mgr->per[index].id);
 	}
 	printf("please enter name: ");
 	//man.name = enterName;
-	//mgr->per[index].name = enterName(Name);
+	
+	//enterName(&(mgr->per[index].name));
+	mgr->per[index].name = enterName(&mgr->per[index].name);
 	printf("please enter last name: ");
 	//man.family = enterName;
-	//mgr->per[index].family = enterName(Name);
+	mgr->per[index].family = enterName(&(mgr->per[index].family));
 	arrangeId(mgr);
-
-
 }
-char* enterName()
+
+//I think we should use it differently. I mean that we won't have to use the p1, and just allocate memory and copy the new string.
+//I didn't manage to do that, we should take a look at it.
+char* enterName(char* name)
 { //reading and allocating name for add_person
-	person p1;
+//	person p1;
 	char tmp[100];
 	int size;
 	gets(tmp);
+	size = strlen(tmp);
 	fseek(stdin, 0, SEEK_END);
-	size = srtlen(tmp);
-	p1.name = (char*)malloc((size + 1)*sizeof(char));
-	strcpy(p1.name, tmp);
-	return(p1.name);
+	name = (char*)malloc((size + 1)*sizeof(char)); //we need to free that
+	strcpy(name, tmp);
+	return(name);
 }
 
 //int arrangeId(db_mgr* mgr,int num) {
@@ -170,11 +185,16 @@ char* enterName()
 //function 1: id seeker
 void arrangeId(db_mgr* mgr)
 {
-	for (int idx = mgr->perCount -1; 0 <= idx ; idx--)
-	{
-		if (mgr->per[idx].id < mgr->per[idx - 1].id);
-
-	}
+		for (int idx = mgr->perCount - 1; 0 < idx ; idx--)
+		{
+			if (mgr->per[idx].id < mgr->per[idx - 1].id)
+			{
+				//swapPosition(&mgr->per[idx], &mgr->per[idx - 1]);
+				person temp = mgr->per[idx];
+				mgr->per[idx] = mgr->per[idx - 1];
+				mgr->per[idx - 1] = temp;
+			}
+		}
 }
 
 void swapPosition(person* per1, person* per2)
