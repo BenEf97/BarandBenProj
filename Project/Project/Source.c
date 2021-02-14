@@ -47,7 +47,8 @@ int dateChk(int mm, int dd, int yy);
 void main()
 {
 	//debug:
-	db_mgr manager = { NULL,0 };
+	db_mgr manager;
+	manager.perCount = 0;
 	char option;
 	do
 	{
@@ -101,19 +102,23 @@ person* init_db(db_mgr* mgr1)
 	db_mgr mgr2;
 	if (mgr1->perCount > 0)
 	{
+
 		mgr2.per = (person*)malloc(mgr1->perCount * sizeof(person));
 		if (mgr2.per == NULL)
 		{
 			printf("Error! Out of memory!");
 			return NULL;
 		}
-		for (int i = 0; i < mgr1->perCount; i++) {
-			
-			swapPer(&mgr2.per[i], &mgr1->per[i]);
+		if (mgr1->perCount > 2)
+		{
+			for (int i = 0; i < mgr1->perCount; i++) {
+
+				swapPer(&mgr1->per[i], &mgr2.per[i]);
+			}
+			free(mgr1->per);
 		}
-	free(mgr1->per);
+		return mgr2.per;
 	}
-	return mgr2.per;
 }
 
 
@@ -122,10 +127,12 @@ char menu()
 	//menu function returns the value that entered
 		int tmp = 1;
 	char choice;
+	printf("Database System Menu:\n1. Add person\n2. Search a person\n3. Search parents\n4. Delete a person\n5. Get generation\n6. Print database\n7. Search by name\n8. Quit\n");
 	while (tmp)
 	{
-		printf("Database System Menu:\n1. Add person\n2. Search a person\n3. Search parents\n4. Delete a person\n5. Get generation\n6. Print database\n7. Search by name\n8. Quit\n");
+		fseek(stdin, 0, SEEK_END);
 		scanf("%c", &choice);
+		fseek(stdin, 0, SEEK_END);
 		if (choice > '0'&&choice < '9') return choice;
 		printf("error! invalid input. try again.\n");
 	}
@@ -142,9 +149,9 @@ int add_person(db_mgr* mgr)
 	printf("ID: ");
 	mgr->per[index].id = idInputCheck();
 	printf("please enter name: ");
-	mgr->per[index].name = enterName(mgr->per[index].name);
+	mgr->per[index].name = enterName(mgr->per[index].name); //remove from sograim
 	printf("please enter last name: ");
-	mgr->per[index].date = inputDate();
+	mgr->per[index].date = inputDate();//row down after last name
 	mgr->per[index].family = enterName(mgr->per[index].family);
 	printf("Please enter your partner's ID: ");
 	mgr->per[index].partnerId = idInputCheck();
@@ -156,6 +163,7 @@ int add_person(db_mgr* mgr)
 	scanf("%c", &mgr->per[index].NumOfChildren);
 	if (mgr->per[index].NumOfChildren != '0')
 	{
+		mgr.per[index].childrenPtr[i] = (long*)malloc((mgr->per[index].NumOfChildren) * sizeof(long));
 		for (int i = 0; i < mgr->per[index].NumOfChildren; i++)
 		{
 			printf("Please enter child's no. %d ID: ", i + 1);
@@ -265,14 +273,14 @@ void swapPer(person* per1, person* per2)
 	temp.FatherId = per1->FatherId;
 	temp.MotherId = per1->MotherId;
 	temp.NumOfChildren = per1->NumOfChildren;
-	if (per1->NumOfChildren > 0)
+	/*if (per1->NumOfChildren > 0)
 	{
 		for (int idx = 0; idx < per1->NumOfChildren; idx++)
 		{
 			temp.childrenPtr[idx] = per1->childrenPtr[idx];
 		}
 	}
-	else temp.childrenPtr = NULL;
+	else temp.childrenPtr = NULL;*/
 
 	per1->id = per2->id;
 	per1->name = per2->name;
@@ -284,14 +292,14 @@ void swapPer(person* per1, person* per2)
 	per1->FatherId = per2->FatherId;
 	per1->MotherId = per2->MotherId;
 	per1->NumOfChildren = per2->NumOfChildren;
-	if (per2->NumOfChildren > 0)
+	/*if (per2->NumOfChildren > 0)
 	{
 		for (int idx = 0; idx < per2->NumOfChildren; idx++)
 		{
 			per1->childrenPtr[idx] = per2->childrenPtr[idx];
 		}
 	}
-	else per1->childrenPtr = NULL;
+	else per1->childrenPtr = NULL;*/
 
 	per2->id = temp.id;
 	per2->name = temp.name;
@@ -303,12 +311,12 @@ void swapPer(person* per1, person* per2)
 	per2->FatherId = temp.FatherId;
 	per2->MotherId = temp.MotherId;
 	per2->NumOfChildren = temp.NumOfChildren;
-	if (temp.NumOfChildren > 0)
+	/*if (temp.NumOfChildren > 0)
 	{
 		for (int idx = 0; idx < temp.NumOfChildren; idx++)
 		{
 			per2->childrenPtr[idx] = temp.childrenPtr[idx];
 		}
 	}
-	else per2->childrenPtr = NULL;
+	else per2->childrenPtr = NULL;*/
 }
