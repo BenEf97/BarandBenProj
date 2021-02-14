@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define TRUE 1
+#define FALSE 0
 
 typedef struct{
 	int year;
@@ -30,22 +32,39 @@ typedef struct {
 
 
 void print_person(person* per);
-//char menu();
+char menu();
 person* init_db(db_mgr* mgr1);
-//void init_db(db_mgr* mgr);
 char intAsChar(int a);
-void add_person(db_mgr* mgr);
+int add_person(db_mgr* mgr);
 char* enterName(char* name);
 void arrangeId(db_mgr* mgr);
-void swapPosition(person* per1, person* per2);
+void swapPer(person* per1, person* per2);
+long idInputCheck();
+DateOfBirth inputDate();
+int yearLeapChk(int year);
+int dateChk(int mm, int dd, int yy);
 
 void main()
 {
 	//debug:
 	db_mgr manager = { NULL,0 };
-	add_person(&manager);
-	add_person(&manager);
-	add_person(&manager);
+	char option;
+	do
+	{
+		option = menu;
+		switch (option)
+		{
+		case '1':
+			add_person(&manager);
+			if (add_person == FALSE)
+				break;
+			continue;
+		case '8':
+			break;
+		}
+
+	} while (option != '8');
+	
 	for (int idx=0;idx<manager.perCount;idx++)
 	free(manager.per+idx);
 }
@@ -83,8 +102,13 @@ person* init_db(db_mgr* mgr1)
 	if (mgr1->perCount > 0)
 	{
 		mgr2.per = (person*)malloc(mgr1->perCount * sizeof(person));
+		if (mgr2.per == NULL)
+		{
+			printf("Error! Out of memory!");
+			return NULL;
+		}
 		for (int i = 0; i < mgr1->perCount; i++) {
-			//mgr2.per[i].id = mgr1->per[i].id; //error
+			
 			swapPosition(&mgr2.per[i], &mgr1->per[i]);
 		}
 	free(mgr1->per);
@@ -93,8 +117,6 @@ person* init_db(db_mgr* mgr1)
 }
 
 
-
-//the function didn't work so rn just wanna check without it
 char menu()
 {
 	//menu function returns the value that entered
@@ -109,77 +131,123 @@ char menu()
 	}
 }
 
-void add_person(db_mgr* mgr)
+int add_person(db_mgr* mgr)
 { //not finished
 
 	int index = mgr->perCount; //start at 0
 	mgr->perCount++;
 	mgr->per = init_db(mgr);
-//	person man;
+	if (mgr->per == NULL) return FALSE;
 	printf("please enter a person details:\n");
 	printf("ID: ");
-//	scanf("%ld", &man.id);
-	//while (man.id < 0 || man.id>9)
-	//{
-	//	printf("invalid input. try again.");
-	//	scanf("%ld", &man.id);
-	//}
-	scanf("%ld", &mgr->per[index].id);
-	fseek(stdin, 0, SEEK_END);
-	while (mgr->per[index].id < 0 && mgr->per[index].id > 1000000000 )
-	{
-		printf("invalid input. try again.");
-		scanf("%ld", &mgr->per[index].id);
-	}
+	mgr->per[index].id = idInputCheck;
 	printf("please enter name: ");
-	//man.name = enterName;
-	
-	//enterName(&(mgr->per[index].name));
 	mgr->per[index].name = enterName(&mgr->per[index].name);
 	printf("please enter last name: ");
-	//man.family = enterName;
+	mgr->per[index].date = inputDate;
 	mgr->per[index].family = enterName(&(mgr->per[index].family));
+	printf("Please enter your partner's ID: ");
+	mgr->per[index].partnerId = idInputCheck;
+	printf("Please enter your father's ID: ");
+	mgr->per[index].FatherId = idInputCheck;
+	printf("Please enter your mother's ID: ");
+	mgr->per[index].MotherId = idInputCheck;
+	printf("Please enter the number of children you have: ");
+	scanf("%c", &mgr->per[index].NumOfChildren);
+	if (mgr->per[index].NumOfChildren != '0')
+	{
+		for (int i = 0; i < mgr->per[index].NumOfChildren; i++)
+		{
+			printf("Please enter child's no. %d ID: ", i + 1);
+			mgr->per[index].childrenPtr[i] = idInputCheck;
+		}
+	}
+
 	arrangeId(mgr);
+	return TRUE;
 }
 
-//I think we should use it differently. I mean that we won't have to use the p1, and just allocate memory and copy the new string.
-//I didn't manage to do that, we should take a look at it.
+DateOfBirth inputDate()
+{
+	int day, month;
+	DateOfBirth date;
+	printf("Please enter date of birth in DD/MM/YY format: ");
+	scanf("%d/%d/%d", &day, &month, &date.year);
+	int chk = dateChk(month, day, date.year);
+	while (chk=FALSE)
+	{
+		printf("Invalid date! try again.\n");
+		scanf("%d/%d/%d", &day, &month, &date.year);
+		chk = dateChk(month, day, date.year);
+	}
+	date.day = intAsChar(day);
+	date.month =intAsChar(month);
+	fseek(stdin, 0, SEEK_END);
+	return date;
+}
+
+
+int dateChk(int mm, int dd, int yy)
+{
+	if (mm > 12 || dd < 0 || mm < 0) return FALSE;
+	if (mm == 2 && dd <= 29)
+	{
+		if (dd == 29 && yearLeapChk(yy) == TRUE) return TRUE;
+		return (dd <= 28) ? TRUE : FALSE;
+	}
+	if (mm == 1 || mm == 3 || mm == 5 || mm == 7 || mm == 8 || mm == 10 || mm == 12)
+		return (dd <= 31) ? TRUE : FALSE;
+
+	if (dd <= 30 && mm != 2) return TRUE;
+	else return FALSE;
+}
+
+int yearLeapChk(int year)
+{
+	if (year % 400 == 0) return TRUE;
+	else if (year % 100 == 0) return FALSE;
+	else if (year % 4 == 0) return TRUE;
+	else return FALSE;
+}
+
+
+long idInputCheck()
+{
+	long id;
+	scanf("%ld", &id);
+	while (id < 0 || id> 1000000000)
+	{
+		printf("Invalid input, please try again: ");
+		scanf("%ld", &id);
+	}
+	fseek(stdin, 0, SEEK_END);
+	return id;
+}
+
 char* enterName(char* name)
 { //reading and allocating name for add_person
-//	person p1;
 	char tmp[100];
 	int size;
 	gets(tmp);
 	size = strlen(tmp);
 	fseek(stdin, 0, SEEK_END);
-	name = (char*)malloc((size + 1)*sizeof(char)); //we need to free that
+	name = (char*)malloc((size + 1)*sizeof(char));
+	if(name==NULL) //we need to free that
 	strcpy(name, tmp);
 	return(name);
 }
 
-//int arrangeId(db_mgr* mgr,int num) {
-//	int i;
-//	for (i = 0; i < mgr->perCount; i++) {
-//		if (i == mgr->perCount - 1) return i;
-//		if (mgr->per[i].id < num) i++;
-//		if (mgr->per[i].id > num) {
-//			for()
-//		}
-//
-//	}
-//}
-
-//function 1: id seeker
+//function 1: id seeker 
 void arrangeId(db_mgr* mgr)
-{
-		for (int idx = mgr->perCount - 1; 0 < idx ; idx--)
+{		
+
+		for (int idx = mgr->perCount - 2; 0 <= idx ; idx--)
 		{
 			if (mgr->per[idx].id < mgr->per[idx - 1].id)
 			{
-				//swapPosition(&mgr->per[idx], &mgr->per[idx - 1]);
-				person temp = mgr->per[idx];
-				mgr->per[idx] = mgr->per[idx - 1];
-				mgr->per[idx - 1] = temp;
+				//[percount-1]     [percount-1-idx]
+				swapPer(&mgr->per[mgr->perCount-1], &mgr->per[idx]);
+				
 			}
 		}
 }
@@ -243,5 +311,4 @@ void swapPer(person* per1, person* per2)
 		}
 	}
 	else per2->childrenPtr = NULL;
-
 }
