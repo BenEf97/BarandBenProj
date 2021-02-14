@@ -65,27 +65,27 @@ void main()
 		}
 
 	} while (option != '8');
-	
+	printf("Printing all the information:\n");
 	for (int idx = 0; idx < manager.perCount; idx++)
 	{
-		print_person(manager.per[idx]);
-		free(manager.per + idx);
+		print_person(manager.per+idx);
 	}
-	
-}
+	free(manager.per);
+	manager.per = NULL;
+	}
 
 //Prints the person's info
 void print_person(person* per)
 {
-	printf("ID: %ld\n", per->id);
+	printf("\nID: %ld\n", per->id);
 	printf("First Name: %s\n", per->name);
 	printf("Last Name: %s\n",per->family);
 	printf("Date: %d/%d/%d \n",per->date.day,per->date.month,per->date.year);
 	printf("Partner's ID: %ld\n",per->partnerId);
 	printf("Mother's ID: %ld\n", per->MotherId);
 	printf("Father's ID: %ld\n", per->FatherId);
-	printf("Number of children: %d\n", per->NumOfChildren);
-	if ((per->NumOfChildren) > 0)
+	printf("Number of children: %c\n", per->NumOfChildren);
+	if ((per->NumOfChildren) > '0')
 	{
 		for (int idx = 0; idx < per->NumOfChildren; idx++)
 		{
@@ -115,7 +115,7 @@ person* init_db(db_mgr* mgr1)
 		}
 		if (mgr1->perCount > 1)
 		{
-			for (int i = 0; i < mgr1->perCount; i++) {
+			for (int i = 0; i < mgr1->perCount-1; i++) {
 
 				swapPer(&mgr1->per[i], &mgr2.per[i]);
 			}
@@ -131,30 +131,30 @@ char menu()
 	//menu function returns the value that entered
 		int tmp = 1;
 	char choice;
-	printf("Database System Menu:\n1. Add person\n2. Search a person\n3. Search parents\n4. Delete a person\n5. Get generation\n6. Print database\n7. Search by name\n8. Quit\n");
+	printf("\n\t\t***Database System Menu***\n1. Add person\n2. Search a person\n3. Search parents\n4. Delete a person\n5. Get generation\n6. Print database\n7. Search by name\n8. Quit\n\n");
 	while (tmp)
 	{
 		fseek(stdin, 0, SEEK_END);
 		scanf("%c", &choice);
 		fseek(stdin, 0, SEEK_END);
 		if (choice > '0'&&choice < '9') return choice;
-		printf("error! invalid input. try again.\n");
+		printf("Error! Invalid input. Please try again.\n");
 	}
 }
 
 int add_person(db_mgr* mgr)
 { //not finished
-
+	printf("**Add Person**\n");
 	int index = mgr->perCount; //start at 0
 	mgr->perCount++;
 	mgr->per = init_db(mgr);
 	if (mgr->per == NULL) return FALSE;
-	printf("please enter a person details:\n");
-	printf("ID: ");
+	printf("Please enter a person details:\n");
+	printf("Please enter ID: ");
 	mgr->per[index].id = idInputCheck();
-	printf("please enter name: ");
+	printf("Please enter name: ");
 	mgr->per[index].name = enterName();
-	printf("please enter last name: ");
+	printf("Please enter last name: ");
 	mgr->per[index].family = enterName();
 	mgr->per[index].date = inputDate();
 	printf("Please enter your partner's ID: ");
@@ -167,7 +167,7 @@ int add_person(db_mgr* mgr)
 	scanf("%c", &mgr->per[index].NumOfChildren);
 	if (mgr->per[index].NumOfChildren != '0')
 	{
-		mgr.per[index].childrenPtr[i] = (long*)malloc((mgr->per[index].NumOfChildren) * sizeof(long));//debug
+		mgr->per[index].childrenPtr = (long*)malloc((mgr->per[index].NumOfChildren) * sizeof(long));//debug
 		for (int i = 0; i < mgr->per[index].NumOfChildren; i++)
 		{
 			printf("Please enter child's no. %d ID: ", i + 1);
@@ -245,21 +245,26 @@ char* enterName()
 	size = strlen(tmp);
 	fseek(stdin, 0, SEEK_END);
 	name = (char*)malloc((size + 1)*sizeof(char));
-	if(name==NULL) //we need to free that
+	if (name == NULL)
+	{
+		printf("Out of memory!");
+		return NULL;
+	}
+	//we need to free that
 	strcpy(name, tmp);
 	return(name);
 }
 
-//function 1: id seeker 
 void arrangeId(db_mgr* mgr)
 {		
 
-		for (int idx = mgr->perCount - 2; 0 <= idx ; idx--)
+		for (int idx = mgr->perCount - 1; 0 < idx ; idx--)
 		{
 			if (mgr->per[idx].id < mgr->per[idx - 1].id)
 			{
 				//[percount-1]     [percount-1-idx]
-				swapPer(&mgr->per[mgr->perCount-1], &mgr->per[idx]);
+				//swapPer(&mgr->per[mgr->perCount - 1], &mgr->per[idx]);
+				swapPer(&mgr->per[idx], &mgr->per[idx-1]);
 				
 			}
 		}
