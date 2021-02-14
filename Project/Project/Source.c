@@ -36,7 +36,7 @@ char menu();
 person* init_db(db_mgr* mgr1);
 char intAsChar(int a);
 int add_person(db_mgr* mgr);
-char* enterName(char* name);
+char* enterName();
 void arrangeId(db_mgr* mgr);
 void swapPer(person* per1, person* per2);
 long idInputCheck();
@@ -66,8 +66,12 @@ void main()
 
 	} while (option != '8');
 	
-	for (int idx=0;idx<manager.perCount;idx++)
-	free(manager.per+idx);
+	for (int idx = 0; idx < manager.perCount; idx++)
+	{
+		print_person(manager.per[idx]);
+		free(manager.per + idx);
+	}
+	
 }
 
 //Prints the person's info
@@ -109,7 +113,7 @@ person* init_db(db_mgr* mgr1)
 			printf("Error! Out of memory!");
 			return NULL;
 		}
-		if (mgr1->perCount > 2)
+		if (mgr1->perCount > 1)
 		{
 			for (int i = 0; i < mgr1->perCount; i++) {
 
@@ -149,10 +153,10 @@ int add_person(db_mgr* mgr)
 	printf("ID: ");
 	mgr->per[index].id = idInputCheck();
 	printf("please enter name: ");
-	mgr->per[index].name = enterName(mgr->per[index].name); //remove from sograim
+	mgr->per[index].name = enterName();
 	printf("please enter last name: ");
-	mgr->per[index].date = inputDate();//row down after last name
-	mgr->per[index].family = enterName(mgr->per[index].family);
+	mgr->per[index].family = enterName();
+	mgr->per[index].date = inputDate();
 	printf("Please enter your partner's ID: ");
 	mgr->per[index].partnerId = idInputCheck();
 	printf("Please enter your father's ID: ");
@@ -163,7 +167,7 @@ int add_person(db_mgr* mgr)
 	scanf("%c", &mgr->per[index].NumOfChildren);
 	if (mgr->per[index].NumOfChildren != '0')
 	{
-		mgr.per[index].childrenPtr[i] = (long*)malloc((mgr->per[index].NumOfChildren) * sizeof(long));
+		mgr.per[index].childrenPtr[i] = (long*)malloc((mgr->per[index].NumOfChildren) * sizeof(long));//debug
 		for (int i = 0; i < mgr->per[index].NumOfChildren; i++)
 		{
 			printf("Please enter child's no. %d ID: ", i + 1);
@@ -232,8 +236,9 @@ long idInputCheck()
 	return id;
 }
 
-char* enterName(char* name)
+char* enterName()
 { //reading and allocating name for add_person
+	char* name;
 	char tmp[100];
 	int size;
 	gets(tmp);
@@ -260,7 +265,7 @@ void arrangeId(db_mgr* mgr)
 		}
 }
 
-void swapPer(person* per1, person* per2)
+void swapPer(person* per1, person* per2)//debug with childrenPtr
 {
 	person temp;
 	temp.id = per1->id;
