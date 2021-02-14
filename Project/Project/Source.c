@@ -51,7 +51,7 @@ void main()
 	char option;
 	do
 	{
-		option = menu;
+		option = menu();
 		switch (option)
 		{
 		case '1':
@@ -109,7 +109,7 @@ person* init_db(db_mgr* mgr1)
 		}
 		for (int i = 0; i < mgr1->perCount; i++) {
 			
-			swapPosition(&mgr2.per[i], &mgr1->per[i]);
+			swapPer(&mgr2.per[i], &mgr1->per[i]);
 		}
 	free(mgr1->per);
 	}
@@ -140,18 +140,18 @@ int add_person(db_mgr* mgr)
 	if (mgr->per == NULL) return FALSE;
 	printf("please enter a person details:\n");
 	printf("ID: ");
-	mgr->per[index].id = idInputCheck;
+	mgr->per[index].id = idInputCheck();
 	printf("please enter name: ");
-	mgr->per[index].name = enterName(&mgr->per[index].name);
+	mgr->per[index].name = enterName(mgr->per[index].name);
 	printf("please enter last name: ");
-	mgr->per[index].date = inputDate;
-	mgr->per[index].family = enterName(&(mgr->per[index].family));
+	mgr->per[index].date = inputDate();
+	mgr->per[index].family = enterName(mgr->per[index].family);
 	printf("Please enter your partner's ID: ");
-	mgr->per[index].partnerId = idInputCheck;
+	mgr->per[index].partnerId = idInputCheck();
 	printf("Please enter your father's ID: ");
-	mgr->per[index].FatherId = idInputCheck;
+	mgr->per[index].FatherId = idInputCheck();
 	printf("Please enter your mother's ID: ");
-	mgr->per[index].MotherId = idInputCheck;
+	mgr->per[index].MotherId = idInputCheck();
 	printf("Please enter the number of children you have: ");
 	scanf("%c", &mgr->per[index].NumOfChildren);
 	if (mgr->per[index].NumOfChildren != '0')
@@ -159,7 +159,7 @@ int add_person(db_mgr* mgr)
 		for (int i = 0; i < mgr->per[index].NumOfChildren; i++)
 		{
 			printf("Please enter child's no. %d ID: ", i + 1);
-			mgr->per[index].childrenPtr[i] = idInputCheck;
+			mgr->per[index].childrenPtr[i] = idInputCheck();
 		}
 	}
 
