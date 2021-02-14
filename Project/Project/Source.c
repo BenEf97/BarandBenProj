@@ -230,7 +230,7 @@ long idInputCheck()
 {
 	long id;
 	scanf("%ld", &id);
-	while (id < 0 || id> 1000000000)
+	while (id < 0)//They said the ID only needs to be 0<id
 	{
 		printf("Invalid input, please try again: ");
 		scanf("%ld", &id);
@@ -253,22 +253,18 @@ char* enterName()
 		printf("Out of memory!");
 		return NULL;
 	}
-	//we need to free that
 	strcpy(name, tmp);
 	return(name);
 }
 
+//Arranging the IDs from small to big
 void arrangeId(db_mgr* mgr)
 {		
-
 		for (int idx = mgr->perCount - 1; 0 < idx ; idx--)
 		{
 			if (mgr->per[idx].id < mgr->per[idx - 1].id)
 			{
-				//[percount-1]     [percount-1-idx]
-				//swapPer(&mgr->per[mgr->perCount - 1], &mgr->per[idx]);
-				swapPer(&mgr->per[idx], &mgr->per[idx-1]);
-				
+				swapPer(&mgr->per[idx], &mgr->per[idx-1]);	
 			}
 		}
 }
@@ -276,6 +272,11 @@ void arrangeId(db_mgr* mgr)
 void swapPer(person* per1, person* per2)//debug with childrenPtr
 {
 	person temp;
+	temp = *per1;
+	*per1 = *per2;
+	*per2 = temp;
+
+	/*
 	temp.id = per1->id;
 	temp.name = per1->name;
 	temp.family = per1->family;
@@ -286,14 +287,14 @@ void swapPer(person* per1, person* per2)//debug with childrenPtr
 	temp.FatherId = per1->FatherId;
 	temp.MotherId = per1->MotherId;
 	temp.NumOfChildren = per1->NumOfChildren;
-	/*if (per1->NumOfChildren > 0)
+	if (per1->NumOfChildren > 0)
 	{
 		for (int idx = 0; idx < per1->NumOfChildren; idx++)
 		{
-			temp.childrenPtr[idx] = per1->childrenPtr[idx];
+			temp.childrenPtr = per1->childrenPtr;
 		}
 	}
-	else temp.childrenPtr = NULL;*/
+	else temp.childrenPtr = NULL;
 
 	per1->id = per2->id;
 	per1->name = per2->name;
@@ -305,14 +306,14 @@ void swapPer(person* per1, person* per2)//debug with childrenPtr
 	per1->FatherId = per2->FatherId;
 	per1->MotherId = per2->MotherId;
 	per1->NumOfChildren = per2->NumOfChildren;
-	/*if (per2->NumOfChildren > 0)
+	if (per2->NumOfChildren > 0)
 	{
 		for (int idx = 0; idx < per2->NumOfChildren; idx++)
 		{
 			per1->childrenPtr[idx] = per2->childrenPtr[idx];
 		}
 	}
-	else per1->childrenPtr = NULL;*/
+	else per1->childrenPtr = NULL;
 
 	per2->id = temp.id;
 	per2->name = temp.name;
@@ -324,7 +325,7 @@ void swapPer(person* per1, person* per2)//debug with childrenPtr
 	per2->FatherId = temp.FatherId;
 	per2->MotherId = temp.MotherId;
 	per2->NumOfChildren = temp.NumOfChildren;
-	/*if (temp.NumOfChildren > 0)
+	if (temp.NumOfChildren > 0)
 	{
 		for (int idx = 0; idx < temp.NumOfChildren; idx++)
 		{
