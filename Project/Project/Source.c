@@ -65,13 +65,16 @@ void main()
 		}
 
 	} while (option != '8');
-	printf("Printing all the information:\n");
-	for (int idx = 0; idx < manager.perCount; idx++)
+	if (manager.perCount > 0)
 	{
-		print_person(manager.per+idx);
+		printf("Printing all the information:\n");
+		for (int idx = 0; idx < manager.perCount; idx++)
+		{
+			print_person(manager.per + idx);
+		}
+		free(manager.per);
+		manager.per = NULL;
 	}
-	free(manager.per);
-	manager.per = NULL;
 	}
 
 //Prints the person's info
