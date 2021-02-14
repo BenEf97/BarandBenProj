@@ -10,7 +10,6 @@ typedef struct{
 	char month;
 	char day;
 }DateOfBirth;
-//I think we might need to make it as a pointer bc it might have more digits.
 
 typedef struct{
 	unsigned long id;
@@ -24,12 +23,10 @@ typedef struct{
 	long* childrenPtr;
 }person;
 
-//data base manager
 typedef struct {
 	person* per;
 	int perCount;
 }db_mgr;
-
 
 void print_person(person* per);
 char menu();
@@ -43,6 +40,13 @@ long idInputCheck();
 DateOfBirth inputDate();
 int yearLeapChk(int year);
 int dateChk(int mm, int dd, int yy);
+person* search_id(db_mgr* mgr,long id);
+void search_person(db_mgr* mgr);
+
+/*
+bugs: when printing, if kids==0 then it doesn't print 0
+also when using search it switches
+*/
 
 void main()
 {
@@ -50,6 +54,7 @@ void main()
 	db_mgr manager;
 	manager.perCount = 0;
 	char option;
+	long inputId;
 	do
 	{
 		option = menu();
@@ -59,6 +64,9 @@ void main()
 			add_person(&manager);
 			if (add_person == FALSE)
 				break;
+			continue;
+		case '2':
+			search_person(&manager);
 			continue;
 		case '8':
 			break;
@@ -87,8 +95,9 @@ void print_person(person* per)
 	printf("Partner's ID: %ld\n",per->partnerId);
 	printf("Mother's ID: %ld\n", per->MotherId);
 	printf("Father's ID: %ld\n", per->FatherId);
-	printf("Number of children: %c\n", per->NumOfChildren);
-	if ((per->NumOfChildren) > '0')
+	printf("Number of children: %d\n", per->NumOfChildren);
+
+	if ((per->NumOfChildren) > 0)
 	{
 		for (int idx = 0; idx < per->NumOfChildren; idx++)
 		{
@@ -145,10 +154,11 @@ char menu()
 	}
 }
 
+//Adding a person to the data base
 int add_person(db_mgr* mgr)
-{ //not finished
+{
 	printf("**Add Person**\n");
-	int index = mgr->perCount; //start at 0
+	int index = mgr->perCount; 
 	mgr->perCount++;
 	mgr->per = init_db(mgr);
 	if (mgr->per == NULL) return FALSE;
@@ -167,17 +177,19 @@ int add_person(db_mgr* mgr)
 	printf("Please enter your mother's ID: ");
 	mgr->per[index].MotherId = idInputCheck();
 	printf("Please enter the number of children you have: ");
-	scanf("%c", &mgr->per[index].NumOfChildren);
-	if (mgr->per[index].NumOfChildren != '0')
+	int numofChildren;
+	scanf("%d",&numofChildren); //do we need to check the input?
+	if (numofChildren)
 	{
-		mgr->per[index].childrenPtr = (long*)malloc((mgr->per[index].NumOfChildren) * sizeof(long));//debug
-		for (int i = 0; i < mgr->per[index].NumOfChildren; i++)
+		mgr->per[index].NumOfChildren = intAsChar(numofChildren);
+		mgr->per[index].childrenPtr = (long*)malloc((mgr->per[index].NumOfChildren) * sizeof(long));
+		for (int i = 0; i < numofChildren; i++)
 		{
 			printf("Please enter child's no. %d ID: ", i + 1);
 			mgr->per[index].childrenPtr[i] = idInputCheck();
 		}
 	}
-
+	else mgr->per[index].childrenPtr = NULL;
 	arrangeId(mgr);
 	return TRUE;
 }
@@ -333,4 +345,69 @@ void swapPer(person* per1, person* per2)//debug with childrenPtr
 		}
 	}
 	else per2->childrenPtr = NULL;*/
+}
+
+//need to make it efficient
+/*
+multiple runners
+back to start and vice versa
+number of digits
+start with number of digits range
+*/
+person* search_id(db_mgr* mgr,long id)
+{
+	person* ptr = mgr->per;
+	int endIdx = mgr->perCount - 1;
+	int idx = 0;
+	if ((ptr[idx].id <= id && ptr[endIdx].id >= id) && (idx <= endIdx))
+	{
+		int midIdx = endIdx / 2;
+		int size = mgr->perCount;
+		while (idx <= endIdx||size>0)
+		{
+			if (ptr[idx].id == id)
+			{
+				*ptr = mgr->per[idx];
+				return ptr;
+			}
+			if (ptr[endIdx].id == id)
+			{
+				*ptr = mgr->per[endIdx];
+				return ptr;
+			}
+			if (ptr[idx].id < id&&ptr[midIdx].id >= id)
+			{
+				endIdx = midIdx;
+				midIdx /= 2;
+				idx++;
+			}
+			else
+			{
+				idx = midIdx;
+				midIdx += idx / 2;
+				endIdx--;
+			}
+			size -= 2;
+		}
+		return NULL;
+	}
+	else return NULL;
+}
+
+void search_person(db_mgr* mgr)
+{
+	if (mgr->perCount)
+	{
+		long id;
+		person* ptr;
+		printf("**Search Person**\nPlease enter ID: ");
+		id = idInputCheck();
+		ptr = search_id(mgr, id);
+		if (ptr == NULL)
+		{
+			printf("The ID is not found in the data base.\n");
+		}
+		else print_person(ptr);
+	}
+	else printf("Error! The data base is empty.\n");
 }
