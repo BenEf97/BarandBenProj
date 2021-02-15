@@ -69,7 +69,7 @@ void main()
 				printf("Printing all the information:\n");
 				for (int idx = 0; idx < manager.perCount; idx++)
 				{
-					print_person(manager.per + idx);
+					print_person(&manager.per[idx]);
 				}
 			}
 			else printf("There is no people in the database.\n");
