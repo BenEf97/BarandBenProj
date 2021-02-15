@@ -201,6 +201,7 @@ person* db_MemoryRealloc(db_mgr* mgr1)
 long* realloc_ChildPtr(person* per)
 {
 	person newper;
+	newper.NumOfChildren = per->NumOfChildren;
 	init_ChildPtr(&newper);
 	//newChildPtr = (long*)malloc(per->NumOfChildren * sizeof(long));
 	//if (newChildPtr == NULL)
@@ -586,7 +587,7 @@ void child_Deleter(person* parent,person* child)
 	}
 	else
 	{
-		realloc_ChildPtr(parent);
+		parent->childrenPtr=realloc_ChildPtr(parent);
 	}
 }
 
