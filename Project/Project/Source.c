@@ -52,6 +52,7 @@ void delete_person(db_mgr* mgr);
 void child_Deleter(person* parent, person* child);
 void quit(db_mgr* mgr);
 void abort_Program();
+void db_Free(db_mgr* mgr);
 
 void main()
 {
@@ -149,28 +150,49 @@ void init_db(db_mgr* mgr)
 	//	printf("Error! Out of memory!");
 }
 
-person* db_MemoryRealloc(db_mgr* mgr)
-{
-	person* newPer;
-	int size = mgr->perCount * sizeof(person);
-	newPer = (person*)malloc(mgr->perCount * sizeof(person));
-	if (newPer == NULL)
-		abort_Program();
-	//{
-	//	printf("Error! Out of memory!");
-	//	return NULL;
-	//}
-	if (mgr->perCount > 1)
+
+person* db_MemoryRealloc(db_mgr* mgr1)
+{ //check me dont know if im right  
+	db_mgr mgr2;
+	if (mgr1->perCount > 0)
 	{
-		for (int i = 0; i < mgr->perCount; i++)
+		if (mgr1->perCount < mgr1->userCount)
 		{
-			if (mgr->per[0].id)
-				swapPer(&mgr->per[i], &newPer[i]);
-			else swapPer(&mgr->per[i + 1], &newPer[i]);
+			mgr1->userCount--;
+			mgr2.per = (person*)malloc(mgr1->userCount * sizeof(person));
+			if (mgr2.per == NULL)
+				abort_Program;
+		}
+		else
+		{
+			mgr2.per = (person*)malloc(mgr1->perCount * sizeof(person));
+			if (mgr2.per == NULL)
+				abort_Program();
+		}
+		if (mgr1->perCount > 1)
+		{
+			if (mgr1->per[0].id)
+			{
+				for (int i = 0; i < mgr1->perCount - 1; i++)
+				{
+					swapPer(&mgr1->per[i], &mgr2.per[i]);
+				}
+				free(mgr1->per);
+			}
+			else
+			{
+				for (int i = 0; i < mgr1->perCount; i++)
+				{
+					swapPer(&mgr1->per[i + 1], &mgr2.per[i]);
+				}
+				free(mgr1->per[0].childrenPtr);
+				free(mgr1->per[0].name);
+				free(mgr1->per[0].family);
+				free(mgr1->per);
+			}
+			return mgr2.per;
 		}
 	}
-	free(mgr->per);
-	return newPer;
 }
 
 long* realloc_ChildPtr(person* per)
@@ -497,12 +519,14 @@ void delete_person(db_mgr* mgr)
 		if (ptr->FatherId)
 		{
 			person* ptrFather = search_id(mgr, ptr->FatherId);
-			child_Deleter(ptrFather, ptr);
+			if (ptrFather)
+				child_Deleter(ptrFather, ptr);
 		}
 		if (ptr->MotherId)
 		{
 			person* ptrMother = search_id(mgr, ptr->MotherId);
-			child_Deleter(ptrMother, ptr);
+			if (ptrMother)
+				child_Deleter(ptrMother, ptr);
 		}
 		if (ptr->partnerId)
 		{
@@ -556,7 +580,10 @@ void child_Deleter(person* parent,person* child)
 		free(parent->childrenPtr);
 		parent->childrenPtr = NULL;
 	}
-	else;//realloc 
+	else
+	{
+		realloc_ChildPtr(parent);
+	}
 }
 
 void quit(db_mgr* mgr)
