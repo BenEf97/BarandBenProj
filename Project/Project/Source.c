@@ -41,7 +41,7 @@ DateOfBirth inputDate();
 int yearLeapChk(int year);
 int dateChk(int mm, int dd, int yy);
 int dataBaseCheck(int perCount);
-person* search_id(db_mgr* mgr, long id);
+person* search_id(db_mgr* mgr, unsigned long id);
 person* ptrForPerson(db_mgr* mgr);
 void search_person(db_mgr* mgr);
 void search_parents(db_mgr* mgr);
@@ -67,16 +67,19 @@ void main()
 			if (dataBaseCheck(manager.perCount))
 				search_person(&manager);
 			continue;
+		case '3':
+			if (dataBaseCheck(manager.perCount))
+				search_parents(&manager);
+			continue;
 		case '6':
-			if (manager.perCount > 0)
+			if (dataBaseCheck(manager.perCount))
 			{
 				printf("Printing all the information:\n");
-				for (int idx = 0; idx < manager.perCount; idx++)
-				{
-					print_person(&manager.per[idx]);
-				}
+					for (int idx = 0; idx < manager.perCount; idx++)
+					{
+						print_person(&manager.per[idx]);
+					}
 			}
-			else printf("There is no people in the database.\n");
 			continue;
 		case '8':
 			break;
@@ -130,8 +133,9 @@ person* init_db(db_mgr* mgr1)
 		if (mgr1->perCount > 1)
 		{
 			for (int i = 0; i < mgr1->perCount-1; i++) {
-
+				if (&mgr1->per[0])
 				swapPer(&mgr1->per[i], &mgr2.per[i]);
+				else spawPer(&mgr1->per[i + 1], &mgr2.per[i]);
 			}
 			free(mgr1->per);
 		}
@@ -157,9 +161,9 @@ char menu()
 }
 
 int add_person(db_mgr* mgr)
-{ //not finished
+{
 	printf("**Add Person**\n");
-	int index = mgr->perCount; //start at 0
+	int index = mgr->perCount;
 	mgr->perCount++;
 	mgr->per = init_db(mgr);
 	if (mgr->per == NULL) return FALSE;
@@ -239,9 +243,9 @@ int yearLeapChk(int year)
 }
 
 
-long idInputCheck()
+unsigned long idInputCheck()
 {
-	long id;
+	unsigned long id;
 	scanf("%ld", &id);
 	while (id < 0)
 	{
@@ -327,26 +331,26 @@ void swapPer(person* per1, person* per2)//debug with childrenPtr
 	
 }
 
-person* search_id(db_mgr* mgr, long id)
+person* search_id(db_mgr* mgr, unsigned long id)
 {
 	person* ptr = mgr->per;
 	int endIdx = mgr->perCount - 1;
 	int idx = 0;
-	if ((ptr[idx].id <= id && ptr[endIdx].id >= id) && (idx <= endIdx))
+	if (ptr[idx].id <= id && ptr[endIdx].id >= id)//didnt enter when search for parents
 	{
-		int midIdx = endIdx / 2;
+		int midIdx = (endIdx / 2)+1;
 		int counter = 0; //only for debug, wanted to check effciency
 		while (idx <= endIdx)
 		{
 			counter++; //only for debug
 			if (ptr[idx].id == id)
 			{
-				*ptr = mgr->per[idx];
+				ptr = &mgr->per[idx];
 				return ptr;
 			}
 			if (ptr[endIdx].id == id)
 			{
-				*ptr = mgr->per[endIdx];
+				ptr = &mgr->per[endIdx];
 				return ptr;
 			}
 			if (ptr[idx].id < id&&ptr[midIdx].id >= id)
@@ -393,9 +397,9 @@ void search_parents(db_mgr* mgr)
 {
 	printf("**Search Parents**\nPlease enter the ID the person you wish to get the info of their parents: ");
 	person* ptr1 = ptrForPerson(mgr);
-	person* ptr2 = ptr1;
 	if (ptr1 != NULL)
 	{
+		person* ptr2 = ptr1;
 		if (ptr1->FatherId)
 		{
 			ptr1 = search_id(mgr, ptr1->FatherId);
@@ -426,4 +430,55 @@ int dataBaseCheck(int perCount)
 		printf("Error! The data base is empty!\n");
 		return FALSE;
 	}
+}
+
+
+void delete_person(db_mgr* mgr)
+{
+	printf("**Delete Person**\nPlease eneter the ID you wish to delete: ");
+	person* ptr = ptrForPerson(mgr);
+	if (ptr != NULL)
+	{
+		if (ptr->FatherId)
+		{
+			person* ptrFather = search_id(mgr, ptr->FatherId);
+		}
+		if (ptr->MotherId)
+		{
+			person* ptrMother = search_id(mgr, ptr->MotherId);
+		}
+		if (ptr->partnerId)
+		{
+			person* ptrPartner = search_id(mgr, ptr->partnerId);
+			ptrPartner->partnerId = 0;
+		}
+		if (ptr->NumOfChildren)
+		{
+
+		}
+		ptr = NULL;
+	}
+}
+
+void child_Deleter(person* parent,person* child)
+{
+	int position=0;
+	for (int idx = 0; idx < parent->NumOfChildren - 1; idx++)
+	{
+		if (parent->childrenPtr[idx] == child->id)
+		{
+			position = idx;
+			parent->childrenPtr[idx] = 0;
+		}
+
+	}
+	long* temp;
+	for (; position < parent->NumOfChildren - 2; position++)
+	{
+
+		temp = parent->childrenPtr[position];
+		parent->childrenPtr[position] = parent->childrenPtr[position + 1];
+		parent->childrenPtr[position + 1] = temp;
+	}
+	parent->NumOfChildren--;
 }
