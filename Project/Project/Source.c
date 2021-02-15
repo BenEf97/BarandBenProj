@@ -50,6 +50,7 @@ void search_parents(db_mgr* mgr);
 void delete_person(db_mgr* mgr);
 void child_Deleter(person* parent, person* child);
 void quit(db_mgr* mgr);
+void print_db(db_mgr* mgr);
 
 void main()
 {
@@ -83,13 +84,7 @@ void main()
 			continue;
 		case '6':
 			if (dataBaseCheck(manager.perCount))
-			{
-				printf("Printing all the information:\n");
-					for (int idx = 0; idx < manager.perCount; idx++)
-					{
-						print_person(&manager.per[idx]);
-					}
-			}
+				print_db(&manager);
 			continue;
 		case '8':
 			quit(&manager);
@@ -99,6 +94,15 @@ void main()
 	} while (option != '8');
 	system("pause");
 	}
+void print_db(db_mgr* mgr)	//need to debug
+{
+	printf("Printing all the information:\n");
+	printf("the number of people in the database is: %d\n", mgr->perCount);
+	for (int idx = 0; idx < mgr->perCount; idx++)
+	{
+		print_person(&mgr->per[idx]);
+	}
+}
 
 //Prints the person's info
 void print_person(person* per)
@@ -172,7 +176,7 @@ long* init_ChildPtr(person* per)
 char menu()
 {
 	//menu function returns the value that entered
-		int tmp = 1;
+	int tmp = 1;
 	char choice;
 	printf("\n\t\t***Database System Menu***\n1. Add person\n2. Search a person\n3. Search parents\n4. Delete a person\n5. Get generation\n6. Print database\n7. Search by name\n8. Quit\n\n");
 	while (tmp)
@@ -247,6 +251,7 @@ DateOfBirth inputDate()
 
 int dateChk(int mm, int dd, int yy)
 {
+	if (yy < 1000 || yy>9999) return FALSE;
 	if (mm > 12 || dd < 0 || mm < 0) return FALSE;
 	if (mm == 2 && dd <= 29)
 	{
