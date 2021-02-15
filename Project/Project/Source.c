@@ -26,11 +26,13 @@ typedef struct{
 typedef struct {
 	person* per;
 	int perCount;
+	int userCount;
 }db_mgr;
 
 void print_person(person* per);
 char menu();
 person* init_db(db_mgr* mgr1);
+long* init_ChildPtr(person* per);
 char intAsChar(int a);
 int add_person(db_mgr* mgr);
 char* enterName();
@@ -45,13 +47,16 @@ person* search_id(db_mgr* mgr, unsigned long id);
 person* ptrForPerson(db_mgr* mgr);
 void search_person(db_mgr* mgr);
 void search_parents(db_mgr* mgr);
-
+void delete_person(db_mgr* mgr);
+void child_Deleter(person* parent, person* child);
 
 void main()
 {
 	//debug:
-	db_mgr manager;
-	manager.perCount = 0;
+	db_mgr manager = { NULL,0, 0};
+	printf("Please enter how many people you wish to be in the data base: ");
+	scanf("%d", &manager.userCount);
+	fseek(stdin, 0, SEEK_END);
 	char option;
 	do
 	{
@@ -59,9 +64,13 @@ void main()
 		switch (option)
 		{
 		case '1':
-			add_person(&manager);
-			if (add_person == FALSE)
-				break;
+			if (manager.userCount > manager.perCount)
+			{
+				add_person(&manager);
+				if (add_person == FALSE)
+					break;
+			}
+			else printf("You riched the limit of the data base! You may not add more people.\n");
 			continue;
 		case '2':
 			if (dataBaseCheck(manager.perCount))
@@ -70,6 +79,10 @@ void main()
 		case '3':
 			if (dataBaseCheck(manager.perCount))
 				search_parents(&manager);
+			continue;
+		case '4':
+			if (dataBaseCheck(manager.perCount))
+				delete_person(&manager);
 			continue;
 		case '6':
 			if (dataBaseCheck(manager.perCount))
@@ -85,7 +98,7 @@ void main()
 			break;
 		}
 
-	} while (option != '8');
+	} while (option != '9');
 	free(manager.per);
 	manager.per = NULL;
 	system("pause");
@@ -135,7 +148,7 @@ person* init_db(db_mgr* mgr1)
 			for (int i = 0; i < mgr1->perCount-1; i++) {
 				if (&mgr1->per[0])
 				swapPer(&mgr1->per[i], &mgr2.per[i]);
-				else spawPer(&mgr1->per[i + 1], &mgr2.per[i]);
+				else swapPer(&mgr1->per[i + 1], &mgr2.per[i]);
 			}
 			free(mgr1->per);
 		}
@@ -143,6 +156,22 @@ person* init_db(db_mgr* mgr1)
 	}
 }
 
+long* init_ChildPtr(person* per)
+{
+	long* newChildPtr;
+	newChildPtr = (long*)malloc(per->NumOfChildren * sizeof(long));
+	if (newChildPtr == NULL)
+	{
+		printf("Error! Out of memory!");
+		return NULL;
+	}
+	for (int idx = 0; idx < per->NumOfChildren; idx++)
+	{
+		newChildPtr[idx] = per->childrenPtr[idx];
+	}
+	free(per->childrenPtr);
+	return newChildPtr;
+}
 
 char menu()
 {
@@ -165,6 +194,7 @@ int add_person(db_mgr* mgr)
 	printf("**Add Person**\n");
 	int index = mgr->perCount;
 	mgr->perCount++;
+	if(mgr->perCount>mgr->userCount)
 	mgr->per = init_db(mgr);
 	if (mgr->per == NULL) return FALSE;
 	printf("Please enter a person details:\n");
@@ -442,10 +472,12 @@ void delete_person(db_mgr* mgr)
 		if (ptr->FatherId)
 		{
 			person* ptrFather = search_id(mgr, ptr->FatherId);
+			child_Deleter(ptrFather, ptr);
 		}
 		if (ptr->MotherId)
 		{
 			person* ptrMother = search_id(mgr, ptr->MotherId);
+			child_Deleter(ptrMother, ptr);
 		}
 		if (ptr->partnerId)
 		{
@@ -454,16 +486,29 @@ void delete_person(db_mgr* mgr)
 		}
 		if (ptr->NumOfChildren)
 		{
-
+			for (int idx = 0; idx < ptr->NumOfChildren; idx++)
+			{
+				person* ptrChild = search_id(mgr, ptr->childrenPtr[idx]);
+				if (ptrChild)
+				{
+					if (ptrChild->FatherId == ptr->id)
+						ptrChild->FatherId = 0;
+					if (ptrChild->MotherId == ptr->id)
+						ptrChild->MotherId = 0;
+				}
+			}
 		}
+		free(ptr);
 		ptr = NULL;
+		arrangeId(mgr);
+		init_db(mgr);
 	}
 }
 
 void child_Deleter(person* parent,person* child)
 {
 	int position=0;
-	for (int idx = 0; idx < parent->NumOfChildren - 1; idx++)
+	for (int idx = 0; idx < parent->NumOfChildren; idx++)
 	{
 		if (parent->childrenPtr[idx] == child->id)
 		{
@@ -473,7 +518,7 @@ void child_Deleter(person* parent,person* child)
 
 	}
 	long* temp;
-	for (; position < parent->NumOfChildren - 2; position++)
+	for (; position < parent->NumOfChildren - 1; position++)
 	{
 
 		temp = parent->childrenPtr[position];
@@ -481,4 +526,12 @@ void child_Deleter(person* parent,person* child)
 		parent->childrenPtr[position + 1] = temp;
 	}
 	parent->NumOfChildren--;
+	if (parent->NumOfChildren == 0)
+	{
+		free(parent->childrenPtr);
+		parent->childrenPtr = NULL;
+	}
+	else;
+
+
 }
