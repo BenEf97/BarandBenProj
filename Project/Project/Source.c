@@ -49,14 +49,15 @@ void search_person(db_mgr* mgr);
 void search_parents(db_mgr* mgr);
 void delete_person(db_mgr* mgr);
 void child_Deleter(person* parent, person* child);
+void quit(db_mgr* mgr);
 
 void main()
 {
 	//debug:
 	db_mgr manager = { NULL,0, 0};
-	printf("Please enter how many people you wish to be in the data base: ");
-	scanf("%d", &manager.userCount);
-	fseek(stdin, 0, SEEK_END);
+	//printf("Please enter how many people you wish to be in the data base: ");
+	//scanf("%d", &manager.userCount);
+	//fseek(stdin, 0, SEEK_END);
 	char option;
 	do
 	{
@@ -64,13 +65,9 @@ void main()
 		switch (option)
 		{
 		case '1':
-			if (manager.userCount > manager.perCount)
-			{
 				add_person(&manager);
 				if (add_person == FALSE)
 					break;
-			}
-			else printf("You riched the limit of the data base! You may not add more people.\n");
 			continue;
 		case '2':
 			if (dataBaseCheck(manager.perCount))
@@ -95,12 +92,11 @@ void main()
 			}
 			continue;
 		case '8':
+			quit(&manager);
 			break;
 		}
 
-	} while (option != '9');
-	free(manager.per);
-	manager.per = NULL;
+	} while (option != '8');
 	system("pause");
 	}
 
@@ -498,10 +494,8 @@ void delete_person(db_mgr* mgr)
 				}
 			}
 		}
-		free(ptr);
-		ptr = NULL;
 		arrangeId(mgr);
-		init_db(mgr);
+		//init_db(mgr);
 	}
 }
 
@@ -532,6 +526,16 @@ void child_Deleter(person* parent,person* child)
 		parent->childrenPtr = NULL;
 	}
 	else;
+}
 
-
+void quit(db_mgr* mgr)
+{
+	printf("Quitting the program!\n");
+	for (int idx = 0; idx < mgr->perCount; idx++)
+	{
+		free(mgr->per[idx].name);
+		free(mgr->per[idx].family);
+		free(mgr->per[idx].childrenPtr);
+	}
+	free(mgr->per);
 }
