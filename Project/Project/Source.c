@@ -53,6 +53,7 @@ void child_Deleter(person* parent, person* child);
 void quit(db_mgr* mgr);
 void abort_Program();
 void db_Free(db_mgr* mgr);
+void print_db(db_mgr* mgr);
 
 void main()
 {
@@ -85,13 +86,7 @@ void main()
 			continue;
 		case '6':
 			if (dataBaseCheck(manager.perCount))
-			{
-				printf("Printing all the information:\n");
-					for (int idx = 0; idx < manager.perCount; idx++)
-					{
-						print_person(&manager.per[idx]);
-					}
-			}
+				print_db(&manager);
 			continue;
 		case '8':
 			quit(&manager);
@@ -101,6 +96,14 @@ void main()
 	} while (option != '8');
 	system("pause");
 	}
+
+void print_db(db_mgr* mgr) {
+	printf("Printing all the information:\n");
+	for(int i=0;i<mgr->perCount;i++)
+	{
+		print_person(&mgr->per[i]);
+	}
+}
 
 //If an allocation fails, the program will display an error output and exits
 void abort_Program()
@@ -197,8 +200,8 @@ person* db_MemoryRealloc(db_mgr* mgr1)
 
 long* realloc_ChildPtr(person* per)
 {
-	long* newChildPtr;
-	init_ChildPtr(&newChildPtr);
+	person newper;
+	init_ChildPtr(&newper);
 	//newChildPtr = (long*)malloc(per->NumOfChildren * sizeof(long));
 	//if (newChildPtr == NULL)
 	//{
@@ -207,10 +210,10 @@ long* realloc_ChildPtr(person* per)
 	//}
 	for (int idx = 0; idx < per->NumOfChildren; idx++)
 	{
-		newChildPtr[idx] = per->childrenPtr[idx];
+		newper.childrenPtr[idx] = per->childrenPtr[idx];
 	}
 	free(per->childrenPtr);
-	return newChildPtr;
+	return newper.childrenPtr;
 }
 
 void init_ChildPtr(person* per)
@@ -301,6 +304,7 @@ DateOfBirth inputDate()
 
 int dateChk(int mm, int dd, int yy)
 {
+	if (yy > 9999 || yy < 1000) return FALSE;
 	if (mm > 12 || dd < 0 || mm < 0) return FALSE;
 	if (mm == 2 && dd <= 29)
 	{
