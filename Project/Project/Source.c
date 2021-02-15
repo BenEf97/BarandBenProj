@@ -31,8 +31,9 @@ typedef struct {
 
 void print_person(person* per);
 char menu();
-person* init_db(db_mgr* mgr1);
-long* init_ChildPtr(person* per);
+void init_db(db_mgr* mgr);
+person* db_MemoryRealloc(db_mgr* mgr1);
+void init_ChildPtr(person* per);
 char intAsChar(int a);
 int add_person(db_mgr* mgr);
 char* enterName();
@@ -50,14 +51,16 @@ void search_parents(db_mgr* mgr);
 void delete_person(db_mgr* mgr);
 void child_Deleter(person* parent, person* child);
 void quit(db_mgr* mgr);
+void abort_Program();
 
 void main()
 {
 	//debug:
 	db_mgr manager = { NULL,0, 0};
-	//printf("Please enter how many people you wish to be in the data base: ");
-	//scanf("%d", &manager.userCount);
-	//fseek(stdin, 0, SEEK_END);
+	printf("Please enter how many people you wish to be in the data base: ");
+	scanf("%d", &manager.userCount);
+	fseek(stdin, 0, SEEK_END);
+	init_db(&manager);
 	char option;
 	do
 	{
@@ -66,8 +69,8 @@ void main()
 		{
 		case '1':
 				add_person(&manager);
-				if (add_person == FALSE)
-					break;
+				//if (add_person == FALSE)
+					//break;
 			continue;
 		case '2':
 			if (dataBaseCheck(manager.perCount))
@@ -100,6 +103,13 @@ void main()
 	system("pause");
 	}
 
+//If an allocation fails, the program will display an error output and exits
+void abort_Program()
+{
+	printf("Error! out of memory!");
+	exit(1);
+}
+
 //Prints the person's info
 void print_person(person* per)
 {
@@ -127,46 +137,70 @@ char intAsChar(int a) {  //puts the value of int in char
 	return b;
 }
 
-person* init_db(db_mgr* mgr1)
-{ //check me dont know if im right  
-	db_mgr mgr2;
-	if (mgr1->perCount > 0)
+void init_db(db_mgr* mgr)
+{
+	while (mgr->userCount <= 0)
 	{
-
-		mgr2.per = (person*)malloc(mgr1->perCount * sizeof(person));
-		if (mgr2.per == NULL)
-		{
-			printf("Error! Out of memory!");
-			return NULL;
-		}
-		if (mgr1->perCount > 1)
-		{
-			for (int i = 0; i < mgr1->perCount-1; i++) {
-				if (&mgr1->per[0])
-				swapPer(&mgr1->per[i], &mgr2.per[i]);
-				else swapPer(&mgr1->per[i + 1], &mgr2.per[i]);
-			}
-			free(mgr1->per);
-		}
-		return mgr2.per;
+		printf("Invalid input. Please try again: ");
+		scanf("%d", &mgr->userCount);
+		fseek(stdin, 0, SEEK_END);
 	}
+	mgr->per = (person*)malloc(mgr->userCount * sizeof(person));
+	if (mgr->per == NULL)
+		abort_Program();
+	//	printf("Error! Out of memory!");
 }
 
-long* init_ChildPtr(person* per)
+person* db_MemoryRealloc(db_mgr* mgr)
+{
+	person* newPer;
+	newPer = (person*)malloc(mgr->perCount * sizeof(person));
+	if (newPer == NULL)
+		abort_Program();
+	//{
+	//	printf("Error! Out of memory!");
+	//	return NULL;
+	//}
+	if (mgr->perCount > 1)
+	{
+		for (int i = 0; i < mgr->perCount - 1; i++)
+		{
+			if (&mgr->per[0])
+				swapPer(&mgr->per[i], &newPer[i]);
+			else swapPer(&mgr->per[i + 1], &newPer[i]);
+		}
+	}
+	free(mgr->per);
+	return newPer;
+}
+
+long* realloc_ChildPtr(person* per)
 {
 	long* newChildPtr;
-	newChildPtr = (long*)malloc(per->NumOfChildren * sizeof(long));
-	if (newChildPtr == NULL)
-	{
-		printf("Error! Out of memory!");
-		return NULL;
-	}
+	init_ChildPtr(&newChildPtr);
+	//newChildPtr = (long*)malloc(per->NumOfChildren * sizeof(long));
+	//if (newChildPtr == NULL)
+	//{
+	//	printf("Error! Out of memory!");
+	//	return NULL;
+	//}
 	for (int idx = 0; idx < per->NumOfChildren; idx++)
 	{
 		newChildPtr[idx] = per->childrenPtr[idx];
 	}
 	free(per->childrenPtr);
 	return newChildPtr;
+}
+
+void init_ChildPtr(person* per)
+{
+	per->childrenPtr = (long*)malloc(per->NumOfChildren * sizeof(long));
+	if (per->childrenPtr == NULL)
+	{
+		abort_Program();
+		//printf("Error! Out of memory!");
+		//exit(1);
+	}
 }
 
 char menu()
@@ -190,8 +224,8 @@ int add_person(db_mgr* mgr)
 	printf("**Add Person**\n");
 	int index = mgr->perCount;
 	mgr->perCount++;
-	if(mgr->perCount>mgr->userCount)
-	mgr->per = init_db(mgr);
+	if (mgr->perCount > mgr->userCount)
+		mgr->per = db_MemoryRealloc(mgr);
 	if (mgr->per == NULL) return FALSE;
 	printf("Please enter a person details:\n");
 	printf("Please enter ID: ");
@@ -213,7 +247,8 @@ int add_person(db_mgr* mgr)
 	mgr->per[index].NumOfChildren = intAsChar(tmp);
 	if (mgr->per[index].NumOfChildren > 0)
 	{
-		mgr->per[index].childrenPtr = (long*)malloc((mgr->per[index].NumOfChildren) * sizeof(long));//debug
+		//mgr->per[index].childrenPtr = (long*)malloc((mgr->per[index].NumOfChildren) * sizeof(long));//debug
+		init_ChildPtr(&mgr->per[index]);
 		for (int i = 0; i < mgr->per[index].NumOfChildren; i++)
 		{
 			printf("Please enter child's no. %d ID: ", i + 1);
@@ -268,7 +303,6 @@ int yearLeapChk(int year)
 	else return FALSE;
 }
 
-
 unsigned long idInputCheck()
 {
 	unsigned long id;
@@ -292,24 +326,24 @@ char* enterName()
 	fseek(stdin, 0, SEEK_END);
 	name = (char*)malloc((size + 1)*sizeof(char));
 	if (name == NULL)
-	{
-		printf("Out of memory!");
-		return NULL;
-	}
+		abort_Program();
+	//{
+	//	printf("Out of memory!");
+	//	return NULL;
+	//}
 	strcpy(name, tmp);
 	return(name);
 }
 
 void arrangeId(db_mgr* mgr)
-{		
-
-		for (int idx = mgr->perCount - 1; 0 < idx ; idx--)
+{
+	for (int idx = mgr->perCount - 1; 0 < idx; idx--)
+	{
+		if (mgr->per[idx].id < mgr->per[idx - 1].id)
 		{
-			if (mgr->per[idx].id < mgr->per[idx - 1].id)
-			{
-				swapPer(&mgr->per[idx], &mgr->per[idx-1]);
-			}
+			swapPer(&mgr->per[idx], &mgr->per[idx - 1]);
 		}
+	}
 }
 
 void swapPer(person* per1, person* per2)//debug with childrenPtr
@@ -362,13 +396,11 @@ person* search_id(db_mgr* mgr, unsigned long id)
 	person* ptr = mgr->per;
 	int endIdx = mgr->perCount - 1;
 	int idx = 0;
-	if (ptr[idx].id <= id && ptr[endIdx].id >= id)//didnt enter when search for parents
+	if (ptr[idx].id <= id && ptr[endIdx].id >= id)
 	{
 		int midIdx = (endIdx / 2)+1;
-		int counter = 0; //only for debug, wanted to check effciency
 		while (idx <= endIdx)
 		{
-			counter++; //only for debug
 			if (ptr[idx].id == id)
 			{
 				ptr = &mgr->per[idx];
