@@ -10,7 +10,6 @@ typedef struct{
 	char month;
 	char day;
 }DateOfBirth;
-//I think we might need to make it as a pointer bc it might have more digits.
 
 typedef struct{
 	unsigned long id;
@@ -24,12 +23,10 @@ typedef struct{
 	long* childrenPtr;
 }person;
 
-//data base manager
 typedef struct {
 	person* per;
 	int perCount;
 }db_mgr;
-
 
 void print_person(person* per);
 char menu();
@@ -43,6 +40,9 @@ long idInputCheck();
 DateOfBirth inputDate();
 int yearLeapChk(int year);
 int dateChk(int mm, int dd, int yy);
+person* search_id(db_mgr* mgr, long id);
+void search_person(db_mgr* mgr);
+
 
 void main()
 {
@@ -59,6 +59,9 @@ void main()
 			add_person(&manager);
 			if (add_person == FALSE)
 				break;
+			continue;
+		case '2':
+			search_person(&manager);
 			continue;
 		case '6':
 			if (manager.perCount > 0)
@@ -183,7 +186,7 @@ int add_person(db_mgr* mgr)
 			mgr->per[index].childrenPtr[i] = idInputCheck();
 		}
 	}
-
+	else mgr->per[index].childrenPtr = NULL;
 	arrangeId(mgr);
 	return TRUE;
 }
@@ -236,7 +239,7 @@ long idInputCheck()
 {
 	long id;
 	scanf("%ld", &id);
-	while (id < 0 || id> 1000000000)
+	while (id < 0)
 	{
 		printf("Invalid input, please try again: ");
 		scanf("%ld", &id);
@@ -278,41 +281,102 @@ void arrangeId(db_mgr* mgr)
 void swapPer(person* per1, person* per2)//debug with childrenPtr
 {
 	person temp;
+	temp = *per1;
+	*per1 = *per2;
+	*per2 = temp;
 
-	temp.id = per1->id;
-	temp.name = per1->name;
-	temp.family = per1->family;
-	temp.date.day = per1->date.day;
-	temp.date.month = per1->date.month;
-	temp.date.year = per1->date.year;
-	temp.partnerId = per1->partnerId;
-	temp.FatherId = per1->FatherId;
-	temp.MotherId = per1->MotherId;
-	temp.NumOfChildren = per1->NumOfChildren;
-	temp.childrenPtr = per1->childrenPtr;
+	//temp.id = per1->id;
+	//temp.name = per1->name;
+	//temp.family = per1->family;
+	//temp.date.day = per1->date.day;
+	//temp.date.month = per1->date.month;
+	//temp.date.year = per1->date.year;
+	//temp.partnerId = per1->partnerId;
+	//temp.FatherId = per1->FatherId;
+	//temp.MotherId = per1->MotherId;
+	//temp.NumOfChildren = per1->NumOfChildren;
+	//temp.childrenPtr = per1->childrenPtr;
 
-	per1->id = per2->id;
-	per1->name = per2->name;
-	per1->family = per2->family;
-	per1->date.day = per2->date.day;
-	per1->date.month = per2->date.month;
-	per1->date.year = per2->date.year;
-	per1->partnerId = per2->partnerId;
-	per1->FatherId = per2->FatherId;
-	per1->MotherId = per2->MotherId;
-	per1->NumOfChildren = per2->NumOfChildren;
-	per1->childrenPtr = per2->childrenPtr;
+	//per1->id = per2->id;
+	//per1->name = per2->name;
+	//per1->family = per2->family;
+	//per1->date.day = per2->date.day;
+	//per1->date.month = per2->date.month;
+	//per1->date.year = per2->date.year;
+	//per1->partnerId = per2->partnerId;
+	//per1->FatherId = per2->FatherId;
+	//per1->MotherId = per2->MotherId;
+	//per1->NumOfChildren = per2->NumOfChildren;
+	//per1->childrenPtr = per2->childrenPtr;
 
-	per2->id = temp.id;
-	per2->name = temp.name;
-	per2->family = temp.family;
-	per2->date.day = temp.date.day;
-	per2->date.month = temp.date.month;
-	per2->date.year = temp.date.year;
-	per2->partnerId = temp.partnerId;
-	per2->FatherId = temp.FatherId;
-	per2->MotherId = temp.MotherId;
-	per2->NumOfChildren = temp.NumOfChildren;
-	per2->childrenPtr = temp.childrenPtr;
+	//per2->id = temp.id;
+	//per2->name = temp.name;
+	//per2->family = temp.family;
+	//per2->date.day = temp.date.day;
+	//per2->date.month = temp.date.month;
+	//per2->date.year = temp.date.year;
+	//per2->partnerId = temp.partnerId;
+	//per2->FatherId = temp.FatherId;
+	//per2->MotherId = temp.MotherId;
+	//per2->NumOfChildren = temp.NumOfChildren;
+	//per2->childrenPtr = temp.childrenPtr;
 	
+}
+
+person* search_id(db_mgr* mgr, long id)
+{
+	person* ptr = mgr->per;
+	int endIdx = mgr->perCount - 1;
+	int idx = 0;
+	if ((ptr[idx].id <= id && ptr[endIdx].id >= id) && (idx <= endIdx))
+	{
+		int midIdx = endIdx / 2;
+		int size = mgr->perCount;
+		while (idx <= endIdx || size > 0)
+		{
+			if (ptr[idx].id == id)
+			{
+				*ptr = mgr->per[idx];
+				return ptr;
+			}
+			if (ptr[endIdx].id == id)
+			{
+				*ptr = mgr->per[endIdx];
+				return ptr;
+			}
+			if (ptr[idx].id < id&&ptr[midIdx].id >= id)
+			{
+				endIdx = midIdx;
+				midIdx /= 2;
+				idx++;
+			}
+			else
+			{
+				idx = midIdx;
+				midIdx += idx / 2;
+				endIdx--;
+			}
+			size -= 2;
+		}
+		return NULL;
+	}
+	else return NULL;
+}
+
+void search_person(db_mgr* mgr)
+{
+	if (mgr->perCount)
+	{
+		long id;
+		person* ptr;
+		printf("**Search Person**\nPlease enter ID: ");
+		id = idInputCheck();
+		ptr = search_id(mgr, id);
+		if (ptr == NULL)
+		{
+			printf("The ID is not found in the data base.\n");
+		}
+		else print_person(ptr);
+	}
+	else printf("Error! The data base is empty.\n");
 }
