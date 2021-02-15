@@ -60,21 +60,25 @@ void main()
 			if (add_person == FALSE)
 				break;
 			continue;
+		case '6':
+			if (manager.perCount > 0)
+			{
+				printf("Printing all the information:\n");
+				for (int idx = 0; idx < manager.perCount; idx++)
+				{
+					print_person(manager.per + idx);
+				}
+			}
+			else printf("There is no people in the database.\n");
+			continue;
 		case '8':
 			break;
 		}
 
 	} while (option != '8');
-	if (manager.perCount > 0)
-	{
-		printf("Printing all the information:\n");
-		for (int idx = 0; idx < manager.perCount; idx++)
-		{
-			print_person(manager.per + idx);
-		}
-		free(manager.per);
-		manager.per = NULL;
-	}
+	free(manager.per);
+	manager.per = NULL;
+	system("pause");
 	}
 
 //Prints the person's info
@@ -87,8 +91,8 @@ void print_person(person* per)
 	printf("Partner's ID: %ld\n",per->partnerId);
 	printf("Mother's ID: %ld\n", per->MotherId);
 	printf("Father's ID: %ld\n", per->FatherId);
-	printf("Number of children: %c\n", per->NumOfChildren);
-	if ((per->NumOfChildren) > '0')
+	printf("Number of children: %d\n", per->NumOfChildren);
+	if ((per->NumOfChildren) > 0)
 	{
 		for (int idx = 0; idx < per->NumOfChildren; idx++)
 		{
@@ -167,8 +171,10 @@ int add_person(db_mgr* mgr)
 	printf("Please enter your mother's ID: ");
 	mgr->per[index].MotherId = idInputCheck();
 	printf("Please enter the number of children you have: ");
-	scanf("%c", &mgr->per[index].NumOfChildren);
-	if (mgr->per[index].NumOfChildren != '0')
+	int tmp;
+	scanf("%d",&tmp);
+	mgr->per[index].NumOfChildren = intAsChar(tmp);
+	if (mgr->per[index].NumOfChildren > 0)
 	{
 		mgr->per[index].childrenPtr = (long*)malloc((mgr->per[index].NumOfChildren) * sizeof(long));//debug
 		for (int i = 0; i < mgr->per[index].NumOfChildren; i++)
@@ -189,7 +195,7 @@ DateOfBirth inputDate()
 	printf("Please enter date of birth in DD/MM/YY format: ");
 	scanf("%d/%d/%d", &day, &month, &date.year);
 	int chk = dateChk(month, day, date.year);
-	while (chk=FALSE)
+	while (!chk)
 	{
 		printf("Invalid date! try again.\n");
 		scanf("%d/%d/%d", &day, &month, &date.year);
@@ -253,7 +259,6 @@ char* enterName()
 		printf("Out of memory!");
 		return NULL;
 	}
-	//we need to free that
 	strcpy(name, tmp);
 	return(name);
 }
@@ -265,10 +270,7 @@ void arrangeId(db_mgr* mgr)
 		{
 			if (mgr->per[idx].id < mgr->per[idx - 1].id)
 			{
-				//[percount-1]     [percount-1-idx]
-				//swapPer(&mgr->per[mgr->perCount - 1], &mgr->per[idx]);
 				swapPer(&mgr->per[idx], &mgr->per[idx-1]);
-				
 			}
 		}
 }
@@ -276,6 +278,7 @@ void arrangeId(db_mgr* mgr)
 void swapPer(person* per1, person* per2)//debug with childrenPtr
 {
 	person temp;
+
 	temp.id = per1->id;
 	temp.name = per1->name;
 	temp.family = per1->family;
@@ -286,14 +289,7 @@ void swapPer(person* per1, person* per2)//debug with childrenPtr
 	temp.FatherId = per1->FatherId;
 	temp.MotherId = per1->MotherId;
 	temp.NumOfChildren = per1->NumOfChildren;
-	/*if (per1->NumOfChildren > 0)
-	{
-		for (int idx = 0; idx < per1->NumOfChildren; idx++)
-		{
-			temp.childrenPtr[idx] = per1->childrenPtr[idx];
-		}
-	}
-	else temp.childrenPtr = NULL;*/
+	temp.childrenPtr = per1->childrenPtr;
 
 	per1->id = per2->id;
 	per1->name = per2->name;
@@ -305,14 +301,7 @@ void swapPer(person* per1, person* per2)//debug with childrenPtr
 	per1->FatherId = per2->FatherId;
 	per1->MotherId = per2->MotherId;
 	per1->NumOfChildren = per2->NumOfChildren;
-	/*if (per2->NumOfChildren > 0)
-	{
-		for (int idx = 0; idx < per2->NumOfChildren; idx++)
-		{
-			per1->childrenPtr[idx] = per2->childrenPtr[idx];
-		}
-	}
-	else per1->childrenPtr = NULL;*/
+	per1->childrenPtr = per2->childrenPtr;
 
 	per2->id = temp.id;
 	per2->name = temp.name;
@@ -324,12 +313,6 @@ void swapPer(person* per1, person* per2)//debug with childrenPtr
 	per2->FatherId = temp.FatherId;
 	per2->MotherId = temp.MotherId;
 	per2->NumOfChildren = temp.NumOfChildren;
-	/*if (temp.NumOfChildren > 0)
-	{
-		for (int idx = 0; idx < temp.NumOfChildren; idx++)
-		{
-			per2->childrenPtr[idx] = temp.childrenPtr[idx];
-		}
-	}
-	else per2->childrenPtr = NULL;*/
+	per2->childrenPtr = temp.childrenPtr;
+	
 }
