@@ -40,8 +40,11 @@ long idInputCheck();
 DateOfBirth inputDate();
 int yearLeapChk(int year);
 int dateChk(int mm, int dd, int yy);
+int dataBaseCheck(int perCount);
 person* search_id(db_mgr* mgr, long id);
+person* ptrForPerson(db_mgr* mgr);
 void search_person(db_mgr* mgr);
+void search_parents(db_mgr* mgr);
 
 
 void main()
@@ -61,7 +64,8 @@ void main()
 				break;
 			continue;
 		case '2':
-			search_person(&manager);
+			if (dataBaseCheck(manager.perCount))
+				search_person(&manager);
 			continue;
 		case '6':
 			if (manager.perCount > 0)
@@ -331,9 +335,10 @@ person* search_id(db_mgr* mgr, long id)
 	if ((ptr[idx].id <= id && ptr[endIdx].id >= id) && (idx <= endIdx))
 	{
 		int midIdx = endIdx / 2;
-		int size = mgr->perCount;
-		while (idx <= endIdx || size > 0)
+		int counter = 0; //only for debug, wanted to check effciency
+		while (idx <= endIdx)
 		{
+			counter++; //only for debug
 			if (ptr[idx].id == id)
 			{
 				*ptr = mgr->per[idx];
@@ -356,27 +361,69 @@ person* search_id(db_mgr* mgr, long id)
 				midIdx += idx / 2;
 				endIdx--;
 			}
-			size -= 2;
 		}
 		return NULL;
 	}
 	else return NULL;
 }
+person* ptrForPerson(db_mgr* mgr)
+{
+	long id=idInputCheck();
+	person* ptr = search_id(mgr,id);
+	if (ptr == NULL)
+	{
+		printf("The ID is not found in the data base.\n");
+		return NULL;
+	}
+	else return ptr;
+}
 
 void search_person(db_mgr* mgr)
 {
-	if (mgr->perCount)
-	{
-		long id;
 		person* ptr;
 		printf("**Search Person**\nPlease enter ID: ");
-		id = idInputCheck();
-		ptr = search_id(mgr, id);
-		if (ptr == NULL)
+		ptr = ptrForPerson(mgr);
+		if (ptr != NULL)
 		{
-			printf("The ID is not found in the data base.\n");
+			print_person(ptr);
 		}
-		else print_person(ptr);
+}
+
+void search_parents(db_mgr* mgr)
+{
+	printf("**Search Parents**\nPlease enter the ID the person you wish to get the info of their parents: ");
+	person* ptr1 = ptrForPerson(mgr);
+	person* ptr2 = ptr1;
+	if (ptr1 != NULL)
+	{
+		if (ptr1->FatherId)
+		{
+			ptr1 = search_id(mgr, ptr1->FatherId);
+			if (ptr1 != NULL)
+				print_person(ptr1);
+			else printf("The father's ID doesn't exist in the data base.\n");
+		}
+		else printf("The person doesn't have a father.\n");
+		if (ptr2->MotherId)
+		{
+			ptr2 = search_id(mgr, ptr2->MotherId);
+			if (ptr2 != NULL)
+				print_person(ptr2);
+			else printf("The mother's ID doesn't exist in the data base.\n");
+		}
+		else printf("The person doesn't have a mother.\n");
 	}
-	else printf("Error! The data base is empty.\n");
+	
+}
+
+//checking if the data base is empty or not. If empty it will return FALSE,else TRUE
+int dataBaseCheck(int perCount)
+{
+	if (perCount > 0)
+		return TRUE;
+	else
+	{
+		printf("Error! The data base is empty!\n");
+		return FALSE;
+	}
 }
