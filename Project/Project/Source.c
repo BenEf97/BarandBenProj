@@ -35,7 +35,7 @@ void init_db(db_mgr* mgr);
 person* db_MemoryRealloc(db_mgr* mgr1);
 void init_ChildPtr(person* per);
 char intAsChar(int a);
-int add_person(db_mgr* mgr);
+void add_person(db_mgr* mgr);
 char* enterName();
 void arrangeId(db_mgr* mgr);
 void swapPer(person* per1, person* per2);
@@ -69,8 +69,6 @@ void main()
 		{
 		case '1':
 				add_person(&manager);
-				//if (add_person == FALSE)
-					//break;
 			continue;
 		case '2':
 			if (dataBaseCheck(manager.perCount))
@@ -154,6 +152,7 @@ void init_db(db_mgr* mgr)
 person* db_MemoryRealloc(db_mgr* mgr)
 {
 	person* newPer;
+	int size = mgr->perCount * sizeof(person);
 	newPer = (person*)malloc(mgr->perCount * sizeof(person));
 	if (newPer == NULL)
 		abort_Program();
@@ -163,9 +162,9 @@ person* db_MemoryRealloc(db_mgr* mgr)
 	//}
 	if (mgr->perCount > 1)
 	{
-		for (int i = 0; i < mgr->perCount - 1; i++)
+		for (int i = 0; i < mgr->perCount; i++)
 		{
-			if (&mgr->per[0])
+			if (mgr->per[0].id)
 				swapPer(&mgr->per[i], &newPer[i]);
 			else swapPer(&mgr->per[i + 1], &newPer[i]);
 		}
@@ -219,14 +218,13 @@ char menu()
 	}
 }
 
-int add_person(db_mgr* mgr)
+void add_person(db_mgr* mgr)
 {
 	printf("**Add Person**\n");
 	int index = mgr->perCount;
 	mgr->perCount++;
 	if (mgr->perCount > mgr->userCount)
 		mgr->per = db_MemoryRealloc(mgr);
-	if (mgr->per == NULL) return FALSE;
 	printf("Please enter a person details:\n");
 	printf("Please enter ID: ");
 	mgr->per[index].id = idInputCheck();
@@ -257,7 +255,6 @@ int add_person(db_mgr* mgr)
 	}
 	else mgr->per[index].childrenPtr = NULL;
 	arrangeId(mgr);
-	return TRUE;
 }
 
 DateOfBirth inputDate()
@@ -526,8 +523,10 @@ void delete_person(db_mgr* mgr)
 				}
 			}
 		}
+		ptr->id = 0;
 		arrangeId(mgr);
-		//init_db(mgr);
+		mgr->perCount--;
+		mgr->per=db_MemoryRealloc(mgr);
 	}
 }
 
@@ -557,12 +556,17 @@ void child_Deleter(person* parent,person* child)
 		free(parent->childrenPtr);
 		parent->childrenPtr = NULL;
 	}
-	else;
+	else;//realloc 
 }
 
 void quit(db_mgr* mgr)
 {
 	printf("Quitting the program!\n");
+	db_Free(mgr);
+}
+
+void db_Free(db_mgr* mgr)
+{
 	for (int idx = 0; idx < mgr->perCount; idx++)
 	{
 		free(mgr->per[idx].name);
