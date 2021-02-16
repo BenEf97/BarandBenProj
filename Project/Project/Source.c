@@ -57,6 +57,7 @@ void db_Free(db_mgr* mgr);
 void print_db(db_mgr* mgr);
 person* relative_Search(db_mgr* mgr, unsigned long id);
 void search_by_name(db_mgr* mgr);
+void get_gen(db_mgr* mgr);
 
 void main()
 {
@@ -84,6 +85,10 @@ void main()
 				search_parents(&manager);
 			continue;
 		case '4':
+			if (dataBaseCheck(manager.perCount))
+				delete_person(&manager);
+			continue;
+		case '5':
 			if (dataBaseCheck(manager.perCount))
 				delete_person(&manager);
 			continue;
@@ -699,38 +704,54 @@ void get_gen(db_mgr* mgr)
 	person* perPtr;
 	person* genPtr;
 	person* treePtr;
-	int work = TRUE;
 	printf("**Get Gen**\nPlease enter ID: ");
 	perPtr = ptrForPerson(mgr);
 	if (perPtr)
 	{
-		int size = 1;
-		treePtr = (person*)malloc(size * sizeof(person));
+		int sizeTree = 1;
+		treePtr = (person*)malloc(sizeTree * sizeof(person));
 		treePtr[0] = *perPtr;
-		int genCount = 1;
-		int idx = 0;
-		int secIdx = 0;
-		//while (work)
+		//while (work) compare to parent id
 		//{
-			for (int idx = 0; idx < perPtr->NumOfChildren - 1; idx++)
+
+		//1 index is for the tree array, and the second one is for the ChildrenPtr array
+		//tree is the array of all the generations and its reweritten
+		//genptr is the child of person at treePtr[idx]
+		//if genptr is true then treePtr[idx+1]=genptr
+		//repeat
+		int treeIdx = 0;
+		int childIdx = 0;
 			{
-				while ()
+				while (1)//later
 				{
-					genPtr = search_id(mgr, treePtr->childrenPtr[secIdx]);
-					if (genPtr)
+					genPtr = search_id(mgr, treePtr[treeIdx].childrenPtr[childIdx]);
+					if (genPtr)//a child exsits 
 					{
-						size++;
-						treePtr = (person*)realloc(size * sizeof(person));
-						treePtr[size - 1] = *genPtr;
-						genPtr = treePtr[idx];
-						secIdx = 0;
+						if (sizeTree == treeIdx +1)
+						{
+							sizeTree++;
+							treePtr = (person*)realloc(treePtr,sizeTree * sizeof(person));
+						}
+						treeIdx++;
+						treePtr[treeIdx] = *genPtr;
+						childIdx = 0;
 					}
-					if (treePtr->NumOfChildren ==secIdx)
-						break;
+					else
+					{
+						treeIdx--;
+						if (treeIdx == 0) break;
+						for (; childIdx < treePtr[treeIdx].NumOfChildren - 1; childIdx++)
+						{
+							if (treePtr[treeIdx].childrenPtr[childIdx] == treePtr[treeIdx + 1].id)
+							{
+								childIdx++;
+								break;
+							}
+						}
+					}
 				}
 			}
-			work = FALSE;
-		//}
+			
 		free(treePtr);
 	}
 }
