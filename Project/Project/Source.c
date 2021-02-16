@@ -161,44 +161,60 @@ void init_db(db_mgr* mgr)
 
 
 person* db_MemoryRealloc(db_mgr* mgr1)
-{ //check me dont know if im right  
+{ //check me dont know if im right 
+	if (mgr1->per == NULL)
+	{
+		mgr1->per = (person*)malloc(mgr1->perCount * sizeof(person));
+		return mgr1->per;
+	}
 	db_mgr mgr2;
-	if (mgr1->perCount > 0)
+	if (mgr1->perCount >= 0)
 	{
 		if (mgr1->perCount <= mgr1->userCount)//delete only
 		{
-			mgr1->userCount--;
-			mgr2.per = (person*)malloc(mgr1->userCount * sizeof(person));
-			if (mgr2.per == NULL)
-				abort_Program;
-		}
-		else
-		{
-			mgr2.per = (person*)malloc(mgr1->perCount * sizeof(person));
-			if (mgr2.per == NULL)
-				abort_Program();
-		}
-		//if (mgr1->perCount > 1)
-		//{
-			if (mgr1->per[0].id)//if add
+			if (mgr1->userCount>0)
+				mgr1->userCount--;
+			if (!mgr1->userCount)
 			{
-				for (int i = 0; i < mgr1->perCount - 1; i++)
-				{
-					swapPer(&mgr1->per[i], &mgr2.per[i]);
-				}
-				free(mgr1->per);
-			}
-			else //if delete
-			{
-				for (int i = 0; i < mgr1->perCount; i++)
-				{
-					swapPer(&mgr1->per[i + 1], &mgr2.per[i]);
-				}
 				free(mgr1->per[0].childrenPtr);
 				free(mgr1->per[0].name);
 				free(mgr1->per[0].family);
 				free(mgr1->per);
+				return NULL;
 			}
+			else
+			{
+				mgr2.per = (person*)malloc(mgr1->userCount * sizeof(person));
+				if (mgr2.per == NULL)
+					abort_Program;
+			}
+		}
+		else
+		{
+
+			mgr2.per = (person*)malloc(mgr1->perCount * sizeof(person));
+			if (mgr2.per == NULL)
+				abort_Program();
+		}
+		if (mgr1->per[0].id)//if add
+		{
+			for (int i = 0; i < mgr1->perCount - 1; i++)
+			{
+				swapPer(&mgr1->per[i], &mgr2.per[i]);
+			}
+			free(mgr1->per);
+		}
+		else //if delete
+		{
+			for (int i = 0; i < mgr1->perCount; i++)
+			{
+				swapPer(&mgr1->per[i + 1], &mgr2.per[i]);
+			}
+			free(mgr1->per[0].childrenPtr);
+			free(mgr1->per[0].name);
+			free(mgr1->per[0].family);
+			free(mgr1->per);
+		}
 			return mgr2.per;
 		//}
 	}
@@ -600,7 +616,8 @@ void child_Deleter(person* parent,person* child)
 void quit(db_mgr* mgr)
 {
 	printf("Quitting the program!\n");
-	db_Free(mgr);
+	if (mgr->per)
+		db_Free(mgr);
 }
 
 void db_Free(db_mgr* mgr)
