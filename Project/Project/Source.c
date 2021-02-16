@@ -112,7 +112,7 @@ void main()
 void print_db(db_mgr* mgr)
 {
 	printf("**Print Data Base**\nPrinting all the information:\n");
-	print("There are %d people in the DataBase\n", mgr->perCount);
+	printf("There are %d people in the DataBase\n", mgr->perCount);
 	for(int i=0;i<mgr->perCount;i++)
 	{
 		print_person(&mgr->per[i]);
@@ -415,11 +415,13 @@ person* search_id(db_mgr* mgr, unsigned long id)
 {
 	person* ptr = mgr->per;
 	int endIdx = mgr->perCount - 1;
+
 	int idx = 0;
 	if (ptr[idx].id <= id && ptr[endIdx].id >= id)
 	{
-		int midIdx = (endIdx / 2)+1;
-		while (idx <= endIdx)
+		int midIdx = (endIdx+idx) / 2;
+		if (midIdx % 2) midIdx++;
+		while (idx <= endIdx /*&&idx<=midIdx&&midIdx<=endIdx*/)
 		{
 			if (ptr[idx].id == id)
 			{
@@ -431,17 +433,18 @@ person* search_id(db_mgr* mgr, unsigned long id)
 				ptr = &mgr->per[endIdx];
 				return ptr;
 			}
-			if (ptr[idx].id < id&&ptr[midIdx].id >= id)
+			if (ptr[idx].id < id && ptr[midIdx].id >= id)
 			{
 				endIdx = midIdx;
-				midIdx /= 2;
 				idx++;
+				midIdx = (endIdx+idx)/2;
+				if (midIdx % 2) midIdx++;
 			}
 			else
 			{
 				idx = midIdx;
-				midIdx += idx / 2;
 				endIdx--;
+				midIdx = (endIdx + idx) / 2;
 			}
 		}
 		return NULL;
@@ -696,6 +699,14 @@ void get_gen(db_mgr* mgr)
 			if (treePtr[treeIdx].childrenPtr && childIdx< treePtr[treeIdx].NumOfChildren)
 			{
 				genPtr = search_id(mgr, treePtr[treeIdx].childrenPtr[childIdx]);
+				if (!genPtr)
+				{
+					for (; childIdx < treePtr[treeIdx].NumOfChildren;childIdx++)
+					{
+						genPtr = search_id(mgr, treePtr[treeIdx].childrenPtr[childIdx]);
+						if (genPtr) break;
+					}
+				}
 			}
 			else genPtr = NULL;
 			if (genPtr)
@@ -715,8 +726,16 @@ void get_gen(db_mgr* mgr)
 			//There are no children to the current generation in the data base, and moving to the next relative
 			else
 			{
-				treeIdx--;
-				if (treeIdx == 0 && treePtr[0].childrenPtr[treePtr->NumOfChildren-1]==treePtr[1].id) break;
+				if (treeIdx) treeIdx--;
+				else
+				{
+					for (childIdx = treePtr[treeIdx].NumOfChildren-1;0<=childIdx; childIdx--)
+					{
+						genPtr = search_id(mgr, treePtr[treeIdx].childrenPtr[childIdx]);
+						if (genPtr) break;
+					}
+				}
+				if (treeIdx == 0 && treePtr[0].childrenPtr[childIdx]==treePtr[1].id) break;
 				for (childIdx=0; childIdx < treePtr[treeIdx].NumOfChildren; childIdx++)
 				{
 					if (treePtr[treeIdx].childrenPtr[childIdx] == treePtr[treeIdx + 1].id)
