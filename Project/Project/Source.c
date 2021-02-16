@@ -610,5 +610,47 @@ void db_Free(db_mgr* mgr)
 }
 
 
-//test
-//home
+void search_by_name(db_mgr* mgr)
+{
+	printf("**Search By Name**\n");
+	char firstName[100];
+	char lastName[100];
+	gets(firstName);
+	fseek(stdin, 0, SEEK_END);
+	fets(lastName);
+	fseek(stdin, 0, SEEK_END);
+	for (int idx=0;idx<mgr->perCount-1;idx++)
+	{
+		if (strcmp(mgr->per[idx].family,lastName)==0)
+		{
+			if (strcmp(mgr->per[idx].name,firstName)==0)
+			{
+				print_person(&mgr->per[idx]);
+				break;
+			}
+			if (parent_Exisitence(mgr,mgr->per[idx].FatherId))
+			{
+				person* father=search_id
+			}
+			if (parent_Exisitence(mgr,mgr->per[idx].MotherId)
+			{
+
+			}
+		}
+	}
+
+	//i'm thinking about using a related person
+}
+
+person* parent_Exisitence(db_mgr* mgr, unsigned long id)
+{
+	if (id)
+	{
+		person* parent=search_id(mgr,id);
+		if (parent)
+		{
+			return parent;
+		}
+	}
+	else return NULL;
+}
