@@ -725,8 +725,12 @@ void get_gen(db_mgr* mgr)
 
 		while (1)//later
 		{
-			genPtr = search_id(mgr, treePtr[treeIdx].childrenPtr[childIdx]);
-			if (genPtr)//a child exsits 
+			if (treePtr[treeIdx].childrenPtr && childIdx< treePtr[treeIdx].NumOfChildren)
+			{
+				genPtr = search_id(mgr, treePtr[treeIdx].childrenPtr[childIdx]);
+			}
+			else genPtr = NULL;
+			if (genPtr)
 			{
 				if (treeSize == treeIdx + 1)
 				{
@@ -740,11 +744,23 @@ void get_gen(db_mgr* mgr)
 			else
 			{
 				treeIdx--;
-				if (treeIdx == 0) break;
-				for (; childIdx < treePtr[treeIdx].NumOfChildren - 1; childIdx++)
+				if (treeIdx == 0 && treePtr[0].childrenPtr[treePtr->NumOfChildren-1]==treePtr[1].id) break;
+				for (childIdx=0; childIdx < treePtr[treeIdx].NumOfChildren; childIdx++)
 				{
 					if (treePtr[treeIdx].childrenPtr[childIdx] == treePtr[treeIdx + 1].id)
 					{
+						if (treePtr[treeIdx].NumOfChildren == childIdx)
+						{
+							treeIdx--;
+							for (childIdx = 0; childIdx<treePtr[treeIdx].NumOfChildren; childIdx++)
+							{
+								if (treePtr[treeIdx].childrenPtr[childIdx] == treePtr[treeIdx + 1].id)
+								{
+									childIdx++;
+									break;
+								}
+							}
+						}
 						childIdx++;
 						break;
 					}
@@ -757,7 +773,7 @@ void get_gen(db_mgr* mgr)
 			for (int idx = 0; idx > treeSize - 2; idx++) free(&treePtr[idx]);
 		}
 		else for (int idx = 0; idx > treeSize - 1; idx++) free(&treePtr[idx]);
-		//free(treePtr);
+		free(treePtr);
 		printf("There are %d generations in the family\n", treeSize);
 	}
 }
