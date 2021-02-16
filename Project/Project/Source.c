@@ -39,7 +39,7 @@ void add_person(db_mgr* mgr);
 char* enterName();
 void arrangeId(db_mgr* mgr);
 void swapPer(person* per1, person* per2);
-long idInputCheck();
+unsigned long idInputCheck();
 DateOfBirth inputDate();
 int yearLeapChk(int year);
 int dateChk(int mm, int dd, int yy);
