@@ -5,6 +5,7 @@
 #define TRUE 1
 #define FALSE 0
 
+
 typedef struct{
 	int year;
 	char month;
@@ -607,3 +608,6 @@ void db_Free(db_mgr* mgr)
 	}
 	free(mgr->per);
 }
+
+
+//test
