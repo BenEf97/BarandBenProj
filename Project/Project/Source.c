@@ -5,12 +5,14 @@
 #define TRUE 1
 #define FALSE 0
 
+//Date of birth Struct
 typedef struct{
 	int year;
 	char month;
 	char day;
 }DateOfBirth;
 
+//Q1: Person Struct
 typedef struct{
 	unsigned long id;
 	char* name;
@@ -22,7 +24,7 @@ typedef struct{
 	char NumOfChildren;
 	long* childrenPtr;
 }person;
-
+//Q3a: db_mgr Struct
 typedef struct {
 	person* per;
 	int perCount;
@@ -54,10 +56,12 @@ void quit(db_mgr* mgr);
 void abort_Program();
 void db_Free(db_mgr* mgr);
 void print_db(db_mgr* mgr);
+person* relative_Search(db_mgr* mgr, unsigned long id);
+void search_by_name(db_mgr* mgr);
+void get_gen(db_mgr* mgr);
 
 void main()
 {
-	//debug:
 	db_mgr manager = { NULL,0, 0};
 	printf("Please enter how many people you wish to be in the data base: ");
 	scanf("%d", &manager.userCount);
@@ -84,21 +88,31 @@ void main()
 			if (dataBaseCheck(manager.perCount))
 				delete_person(&manager);
 			continue;
+		case '5':
+			if (dataBaseCheck(manager.perCount))
+				get_gen(&manager);
+			continue;
 		case '6':
 			if (dataBaseCheck(manager.perCount))
 				print_db(&manager);
+			continue;
+		case '7':
+			if (dataBaseCheck(manager.perCount))
+				search_by_name(&manager);
 			continue;
 		case '8':
 			quit(&manager);
 			break;
 		}
-
 	} while (option != '8');
 	system("pause");
 	}
 
-void print_db(db_mgr* mgr) {
-	printf("Printing all the information:\n");
+//Q6: Printing all the data base information
+void print_db(db_mgr* mgr)
+{
+	printf("**Print Data Base**\nPrinting all the information:\n");
+	printf("There are %d people in the DataBase\n", mgr->perCount);
 	for(int i=0;i<mgr->perCount;i++)
 	{
 		print_person(&mgr->per[i]);
@@ -112,7 +126,7 @@ void abort_Program()
 	exit(1);
 }
 
-//Prints the person's info
+//Q2: print_person: Printing the person's information
 void print_person(person* per)
 {
 	printf("\nID: %ld\n", per->id);
@@ -133,12 +147,15 @@ void print_person(person* per)
 	}
 }
 
-char intAsChar(int a) {  //puts the value of int in char
+//Puts the value of int in char
+char intAsChar(int a)
+{ 
 	char b;
 	b = (char) a;
 	return b;
 }
 
+//Q2: Init data base: allocating memory for the database of requested size from the user.
 void init_db(db_mgr* mgr)
 {
 	while (mgr->userCount <= 0)
@@ -150,91 +167,108 @@ void init_db(db_mgr* mgr)
 	mgr->per = (person*)malloc(mgr->userCount * sizeof(person));
 	if (mgr->per == NULL)
 		abort_Program();
-	//	printf("Error! Out of memory!");
 }
-
-
+/*If there is a need to reallocate memory it will work in 2 cases:
+1) User ask to add more people beyond the initial size
+2) Delete person*/
 person* db_MemoryRealloc(db_mgr* mgr1)
-{ //check me dont know if im right  
-	db_mgr mgr2;
-	if (mgr1->perCount > 0)
+{  
+	//If the user deleted all the data base and decided to add, it will allocate a new data base
+	if (mgr1->per == NULL)
 	{
-		if (mgr1->perCount < mgr1->userCount)
-		{
+		mgr1->per = (person*)malloc(mgr1->perCount * sizeof(person));
+		return mgr1->per;
+	}
+	db_mgr mgr2;
+
+	//If the user want to delete a person, and need to reallocate the memory, without passing the initial limit
+	if (mgr1->perCount <= mgr1->userCount) 
+	{
+		if (mgr1->userCount > 0)
 			mgr1->userCount--;
+
+		//If the user deletes the last person, the data base will be free. The user may add more memory later.
+		if (!mgr1->userCount)
+		{
+			free(mgr1->per[0].childrenPtr);
+			free(mgr1->per[0].name);
+			free(mgr1->per[0].family);
+			free(mgr1->per);
+			return NULL;
+		}
+		
+		//Only decreasing without reaching 0
+		else
+		{
 			mgr2.per = (person*)malloc(mgr1->userCount * sizeof(person));
 			if (mgr2.per == NULL)
 				abort_Program;
 		}
-		else
-		{
-			mgr2.per = (person*)malloc(mgr1->perCount * sizeof(person));
-			if (mgr2.per == NULL)
-				abort_Program();
-		}
-		if (mgr1->perCount > 1)
-		{
-			if (mgr1->per[0].id)
-			{
-				for (int i = 0; i < mgr1->perCount - 1; i++)
-				{
-					swapPer(&mgr1->per[i], &mgr2.per[i]);
-				}
-				free(mgr1->per);
-			}
-			else
-			{
-				for (int i = 0; i < mgr1->perCount; i++)
-				{
-					swapPer(&mgr1->per[i + 1], &mgr2.per[i]);
-				}
-				free(mgr1->per[0].childrenPtr);
-				free(mgr1->per[0].name);
-				free(mgr1->per[0].family);
-				free(mgr1->per);
-			}
-			return mgr2.per;
-		}
 	}
+
+	//If the user is adding more people beyond the initial limit, or delete a person that was allocated beyond the limit.
+	else
+	{
+		mgr2.per = (person*)malloc(mgr1->perCount * sizeof(person));
+		if (mgr2.per == NULL)
+			abort_Program();
+	}
+
+	//Case of allocating more memory, when adding a person.
+	if (mgr1->per[0].id)
+	{
+		for (int i = 0; i < mgr1->perCount - 1; i++)
+		{
+			swapPer(&mgr1->per[i], &mgr2.per[i]);
+		}
+		free(mgr1->per);
+	}
+
+	//Case of deleting a person and allocating less memory, and free the deleted person.
+	else
+	{
+		for (int i = 0; i < mgr1->perCount; i++)
+		{
+			swapPer(&mgr1->per[i + 1], &mgr2.per[i]);
+		}
+		free(mgr1->per[0].childrenPtr);
+		free(mgr1->per[0].name);
+		free(mgr1->per[0].family);
+		free(mgr1->per);
+	}
+	return mgr2.per;
 }
 
+//If person deleted, the parent get their pointer to their index deleted, and reallocated with less memory.
 long* realloc_ChildPtr(person* per)
 {
-	person newper;
-	newper.NumOfChildren = per->NumOfChildren;
-	init_ChildPtr(&newper);
-	//newChildPtr = (long*)malloc(per->NumOfChildren * sizeof(long));
-	//if (newChildPtr == NULL)
-	//{
-	//	printf("Error! Out of memory!");
-	//	return NULL;
-	//}
+	person newPer;
+	newPer.NumOfChildren = per->NumOfChildren;
+	init_ChildPtr(&newPer);
 	for (int idx = 0; idx < per->NumOfChildren; idx++)
 	{
-		newper.childrenPtr[idx] = per->childrenPtr[idx];
+		newPer.childrenPtr[idx] = per->childrenPtr[idx];
 	}
 	free(per->childrenPtr);
-	return newper.childrenPtr;
+	return newPer.childrenPtr;
 }
 
+//Initial memory allocation for a children pointer when adding a person
 void init_ChildPtr(person* per)
 {
 	per->childrenPtr = (long*)malloc(per->NumOfChildren * sizeof(long));
 	if (per->childrenPtr == NULL)
 	{
 		abort_Program();
-		//printf("Error! Out of memory!");
-		//exit(1);
 	}
 }
 
+//Q4: Menu: Checks the input and returns the value that entered
 char menu()
 {
-	//menu function returns the value that entered
-		int tmp = 1;
 	char choice;
 	printf("\n\t\t***Database System Menu***\n1. Add person\n2. Search a person\n3. Search parents\n4. Delete a person\n5. Get generation\n6. Print database\n7. Search by name\n8. Quit\n\n");
-	while (tmp)
+	while (TRUE)
 	{
 		fseek(stdin, 0, SEEK_END);
 		scanf("%c", &choice);
@@ -243,7 +277,7 @@ char menu()
 		printf("Error! Invalid input. Please try again.\n");
 	}
 }
-
+//Q5: add_person: Adds a person to the database 
 void add_person(db_mgr* mgr)
 {
 	printf("**Add Person**\n");
@@ -266,12 +300,11 @@ void add_person(db_mgr* mgr)
 	printf("Please enter your mother's ID: ");
 	mgr->per[index].MotherId = idInputCheck();
 	printf("Please enter the number of children you have: ");
-	int tmp;
-	scanf("%d",&tmp);
-	mgr->per[index].NumOfChildren = intAsChar(tmp);
+	int numofchildrenInt;
+	scanf("%d",&numofchildrenInt);
+	mgr->per[index].NumOfChildren = intAsChar(numofchildrenInt);
 	if (mgr->per[index].NumOfChildren > 0)
 	{
-		//mgr->per[index].childrenPtr = (long*)malloc((mgr->per[index].NumOfChildren) * sizeof(long));//debug
 		init_ChildPtr(&mgr->per[index]);
 		for (int i = 0; i < mgr->per[index].NumOfChildren; i++)
 		{
@@ -282,27 +315,28 @@ void add_person(db_mgr* mgr)
 	else mgr->per[index].childrenPtr = NULL;
 	arrangeId(mgr);
 }
-
+//Getting date information from the user, and checking for valid input
 DateOfBirth inputDate()
 {
 	int day, month;
 	DateOfBirth date;
 	printf("Please enter date of birth in DD/MM/YY format: ");
 	scanf("%d/%d/%d", &day, &month, &date.year);
+	fseek(stdin, 0, SEEK_END);
 	int chk = dateChk(month, day, date.year);
 	while (!chk)
 	{
 		printf("Invalid date! try again.\n");
 		scanf("%d/%d/%d", &day, &month, &date.year);
+		fseek(stdin, 0, SEEK_END);
 		chk = dateChk(month, day, date.year);
 	}
 	date.day = intAsChar(day);
 	date.month =intAsChar(month);
-	fseek(stdin, 0, SEEK_END);
 	return date;
 }
 
-
+//Checking for valid input of date.
 int dateChk(int mm, int dd, int yy)
 {
 	if (yy > 9999 || yy < 1000) return FALSE;
@@ -318,7 +352,7 @@ int dateChk(int mm, int dd, int yy)
 	if (dd <= 30 && mm != 2) return TRUE;
 	else return FALSE;
 }
-
+//Checking for right date with leap year.
 int yearLeapChk(int year)
 {
 	if (year % 400 == 0) return TRUE;
@@ -327,38 +361,37 @@ int yearLeapChk(int year)
 	else return FALSE;
 }
 
+//Getting and checking user's id input
 unsigned long idInputCheck()
 {
 	unsigned long id;
 	scanf("%ld", &id);
+	fseek(stdin, 0, SEEK_END);
 	while (id < 0)
 	{
 		printf("Invalid input, please try again: ");
 		scanf("%ld", &id);
+		fseek(stdin, 0, SEEK_END);
 	}
-	fseek(stdin, 0, SEEK_END);
 	return id;
 }
-
+//Getting input from the user and allocating name for add_person
 char* enterName()
-{ //reading and allocating name for add_person
+{
 	char* name;
 	char tmp[100];
 	int size;
 	gets(tmp);
-	size = strlen(tmp);
 	fseek(stdin, 0, SEEK_END);
+	size = strlen(tmp);
 	name = (char*)malloc((size + 1)*sizeof(char));
 	if (name == NULL)
 		abort_Program();
-	//{
-	//	printf("Out of memory!");
-	//	return NULL;
-	//}
 	strcpy(name, tmp);
 	return(name);
 }
 
+//After changing the data base, the elements will be arranged by ID, starting from the smallest to the biggest values
 void arrangeId(db_mgr* mgr)
 {
 	for (int idx = mgr->perCount - 1; 0 < idx; idx--)
@@ -369,61 +402,26 @@ void arrangeId(db_mgr* mgr)
 		}
 	}
 }
-
-void swapPer(person* per1, person* per2)//debug with childrenPtr
+//Swaps between 2 person spots in an array.
+void swapPer(person* per1, person* per2)
 {
 	person temp;
 	temp = *per1;
 	*per1 = *per2;
 	*per2 = temp;
-
-	//temp.id = per1->id;
-	//temp.name = per1->name;
-	//temp.family = per1->family;
-	//temp.date.day = per1->date.day;
-	//temp.date.month = per1->date.month;
-	//temp.date.year = per1->date.year;
-	//temp.partnerId = per1->partnerId;
-	//temp.FatherId = per1->FatherId;
-	//temp.MotherId = per1->MotherId;
-	//temp.NumOfChildren = per1->NumOfChildren;
-	//temp.childrenPtr = per1->childrenPtr;
-
-	//per1->id = per2->id;
-	//per1->name = per2->name;
-	//per1->family = per2->family;
-	//per1->date.day = per2->date.day;
-	//per1->date.month = per2->date.month;
-	//per1->date.year = per2->date.year;
-	//per1->partnerId = per2->partnerId;
-	//per1->FatherId = per2->FatherId;
-	//per1->MotherId = per2->MotherId;
-	//per1->NumOfChildren = per2->NumOfChildren;
-	//per1->childrenPtr = per2->childrenPtr;
-
-	//per2->id = temp.id;
-	//per2->name = temp.name;
-	//per2->family = temp.family;
-	//per2->date.day = temp.date.day;
-	//per2->date.month = temp.date.month;
-	//per2->date.year = temp.date.year;
-	//per2->partnerId = temp.partnerId;
-	//per2->FatherId = temp.FatherId;
-	//per2->MotherId = temp.MotherId;
-	//per2->NumOfChildren = temp.NumOfChildren;
-	//per2->childrenPtr = temp.childrenPtr;
-	
 }
-
+//Q6: search_id: Gets id and returns a pointer for a person with the same id. If fails it will return NULL
 person* search_id(db_mgr* mgr, unsigned long id)
 {
 	person* ptr = mgr->per;
 	int endIdx = mgr->perCount - 1;
+
 	int idx = 0;
 	if (ptr[idx].id <= id && ptr[endIdx].id >= id)
 	{
-		int midIdx = (endIdx / 2)+1;
-		while (idx <= endIdx)
+		int midIdx = (endIdx+idx) / 2;
+		if (midIdx % 2) midIdx++;
+		while (idx <= endIdx /*&&idx<=midIdx&&midIdx<=endIdx*/)
 		{
 			if (ptr[idx].id == id)
 			{
@@ -435,23 +433,25 @@ person* search_id(db_mgr* mgr, unsigned long id)
 				ptr = &mgr->per[endIdx];
 				return ptr;
 			}
-			if (ptr[idx].id < id&&ptr[midIdx].id >= id)
+			if (ptr[idx].id < id && ptr[midIdx].id >= id)
 			{
 				endIdx = midIdx;
-				midIdx /= 2;
 				idx++;
+				midIdx = (endIdx+idx)/2;
+				if (midIdx % 2) midIdx++;
 			}
 			else
 			{
 				idx = midIdx;
-				midIdx += idx / 2;
 				endIdx--;
+				midIdx = (endIdx + idx) / 2;
 			}
 		}
 		return NULL;
 	}
 	else return NULL;
 }
+//Automating ID input and searching for a person. Returns a pointer of the person with the wanted ID. If failed return NULL
 person* ptrForPerson(db_mgr* mgr)
 {
 	long id=idInputCheck();
@@ -463,7 +463,7 @@ person* ptrForPerson(db_mgr* mgr)
 	}
 	else return ptr;
 }
-
+//Q7: search_person: Finds a person from the database by id and prints his info.
 void search_person(db_mgr* mgr)
 {
 		person* ptr;
@@ -474,7 +474,7 @@ void search_person(db_mgr* mgr)
 			print_person(ptr);
 		}
 }
-
+//Q8: search_parents: Finds parents of a pesron in the database and prints thier info.
 void search_parents(db_mgr* mgr)
 {
 	printf("**Search Parents**\nPlease enter the ID the person you wish to get the info of their parents: ");
@@ -502,7 +502,7 @@ void search_parents(db_mgr* mgr)
 	
 }
 
-//checking if the data base is empty or not. If empty it will return FALSE,else TRUE
+//Checking if the data base is empty or not. If empty it will return FALSE and only will be able to use add_person ,else TRUE.
 int dataBaseCheck(int perCount)
 {
 	if (perCount > 0)
@@ -514,7 +514,7 @@ int dataBaseCheck(int perCount)
 	}
 }
 
-
+//Q9: delete_person: Deletes a person from anywhere in the database and from relatives info, and reallocate new memory.
 void delete_person(db_mgr* mgr)
 {
 	printf("**Delete Person**\nPlease eneter the ID you wish to delete: ");
@@ -558,7 +558,7 @@ void delete_person(db_mgr* mgr)
 		mgr->per=db_MemoryRealloc(mgr);
 	}
 }
-
+//Deletes persons id from the childrenPtr array in parents of the person.
 void child_Deleter(person* parent,person* child)
 {
 	int position=0;
@@ -571,6 +571,7 @@ void child_Deleter(person* parent,person* child)
 		}
 
 	}
+	//Temp is used swap the positios int he children pointer array
 	long* temp;
 	for (; position < parent->NumOfChildren - 1; position++)
 	{
@@ -586,17 +587,17 @@ void child_Deleter(person* parent,person* child)
 		parent->childrenPtr = NULL;
 	}
 	else
-	{
 		parent->childrenPtr=realloc_ChildPtr(parent);
-	}
 }
-
+//Q13: quit: Freeing the allocted memory and exit the program.
 void quit(db_mgr* mgr)
 {
 	printf("Quitting the program!\n");
-	db_Free(mgr);
+	//If the user already deleted all the info from the data base, it will skip db_free.
+	if (mgr->per)
+		db_Free(mgr);
 }
-
+//Freeing the allocated memory of persons info.
 void db_Free(db_mgr* mgr)
 {
 	for (int idx = 0; idx < mgr->perCount; idx++)
@@ -606,4 +607,165 @@ void db_Free(db_mgr* mgr)
 		free(mgr->per[idx].childrenPtr);
 	}
 	free(mgr->per);
+}
+
+//Q12: search_by_name: Prints all the people that match the searched name.
+void search_by_name(db_mgr* mgr)
+{
+	printf("**Search By Name**\n");
+	char firstName[100];
+	char lastName[100];
+	printf("Please enter first name: ");
+	gets(firstName);
+	fseek(stdin, 0, SEEK_END);
+	printf("Please enter last name: ");
+	gets(lastName);
+	fseek(stdin, 0, SEEK_END);
+	//The function will seek for relatives by the family name to shorten the search, otherwise will search by changing indexs
+	person* relative;
+	for (int idx=0;idx<mgr->perCount-1;idx++)
+	{
+		if (strcmp(mgr->per[idx].family,lastName)==0)
+		{
+			if (strcmp(mgr->per[idx].name,firstName)==0)
+			{
+				print_person(&mgr->per[idx]);
+				break;
+			}
+			relative = relative_Search(mgr, mgr->per[idx].FatherId);
+			if (strcmp(relative->name,firstName)==0)
+			{
+				print_person(relative);
+				break;
+			}
+			relative = relative_Search(mgr, mgr->per[idx].MotherId);
+			if (strcmp(relative->name, firstName)==0)
+			{
+				print_person(relative);
+				break;
+			}
+			if (mgr->per[idx].NumOfChildren)
+			{
+				for (int secIdx = 0; secIdx < mgr->per[idx].NumOfChildren; secIdx++)
+				{
+					relative = relative_Search(mgr, mgr->per[idx].childrenPtr[secIdx]);
+					if (strcmp(relative->name, firstName)==0)
+					{
+						print_person(relative);
+						break;
+					}
+				}
+			}
+		}
+	}
+}
+//Checks that the person have a relative info, and if they do the function will return a pointer for that relative
+person* relative_Search(db_mgr* mgr, unsigned long id)
+{
+	if (id)
+	{
+		person* relative=search_id(mgr,id);
+		if (relative)
+		{
+			return relative;
+		}
+		else return NULL;
+	}
+	else return NULL;
+}
+
+
+//Q10: get_gen: Prints the number of descendants of a chosen person.
+void get_gen(db_mgr* mgr)
+{
+	person* perPtr;
+	person* genPtr;
+	person* treePtr;
+	printf("**Get Gen**\nPlease enter ID: ");
+	perPtr = ptrForPerson(mgr);
+	if (perPtr)
+	{
+		int treeSize = 1;
+		//The function will create a new person array that will be a family tree.
+		//The final size of the array will be the number of the generation
+		treePtr = (person*)malloc(treeSize * sizeof(person));
+		if (!treePtr)
+			abort_Program;
+		treePtr[0] = *perPtr;		
+		int treeIdx = 0;
+		int childIdx = 0;
+		while (TRUE) //Only breaks at a specific condition that occurs before the end of the loop
+		{
+			if (treePtr[treeIdx].childrenPtr && childIdx< treePtr[treeIdx].NumOfChildren)
+			{
+				genPtr = search_id(mgr, treePtr[treeIdx].childrenPtr[childIdx]);
+				if (!genPtr)
+				{
+					for (; childIdx < treePtr[treeIdx].NumOfChildren;childIdx++)
+					{
+						genPtr = search_id(mgr, treePtr[treeIdx].childrenPtr[childIdx]);
+						if (genPtr) break;
+					}
+				}
+			}
+			else genPtr = NULL;
+			if (genPtr)
+			{
+				if (treeSize == treeIdx + 1)
+				{
+					//If there is a new generation the array will increace
+					treeSize++;
+					treePtr = (person*)realloc(treePtr, treeSize * sizeof(person));
+					if (!treePtr)
+						abort_Program();
+				}
+				treeIdx++;
+				treePtr[treeIdx] = *genPtr;
+				childIdx = 0;
+			}
+			//There are no children to the current generation in the data base, and moving to the next relative
+			else
+			{
+				if (treeIdx) treeIdx--;
+				else
+				{
+					for (childIdx = treePtr[treeIdx].NumOfChildren-1;0<=childIdx; childIdx--)
+					{
+						genPtr = search_id(mgr, treePtr[treeIdx].childrenPtr[childIdx]);
+						if (genPtr) break;
+					}
+				}
+				if (treeIdx == 0 && treePtr[0].childrenPtr[childIdx]==treePtr[1].id) break;
+				for (childIdx=0; childIdx < treePtr[treeIdx].NumOfChildren; childIdx++)
+				{
+					if (treePtr[treeIdx].childrenPtr[childIdx] == treePtr[treeIdx + 1].id)
+					{
+						if (treePtr[treeIdx].NumOfChildren == childIdx)
+						{
+							treeIdx--;
+							for (childIdx = 0; childIdx<treePtr[treeIdx].NumOfChildren; childIdx++)
+							{
+								if (treePtr[treeIdx].childrenPtr[childIdx] == treePtr[treeIdx + 1].id)
+								{
+									childIdx++;
+									break;
+								}
+							}
+						}
+						childIdx++;
+						break;
+					}
+				}
+			}
+		}
+		//If the last generation person has children that aren't in the person data base
+		if (treePtr[treeSize - 1].NumOfChildren)
+		{
+			treeSize++;
+			for (int idx = 0; idx > treeSize - 2; idx++) free(&treePtr[idx]);
+		}
+		else for (int idx = 0; idx > treeSize - 1; idx++) free(&treePtr[idx]);
+		free(treePtr);
+		printf("There are %d generations in the family\n", treeSize);
+	}
 }
