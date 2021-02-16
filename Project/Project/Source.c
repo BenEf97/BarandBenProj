@@ -692,3 +692,45 @@ person* relative_Search(db_mgr* mgr, unsigned long id)
 	}
 	else return NULL;
 }
+
+//manager of family tree
+void get_gen(db_mgr* mgr)
+{
+	person* perPtr;
+	person* genPtr;
+	person* treePtr;
+	int work = TRUE;
+	printf("**Get Gen**\nPlease enter ID: ");
+	perPtr = ptrForPerson(mgr);
+	if (perPtr)
+	{
+		int size = 1;
+		treePtr = (person*)malloc(size * sizeof(person));
+		treePtr[0] = *perPtr;
+		int genCount = 1;
+		int idx = 0;
+		int secIdx = 0;
+		//while (work)
+		//{
+			for (int idx = 0; idx < perPtr->NumOfChildren - 1; idx++)
+			{
+				while ()
+				{
+					genPtr = search_id(mgr, treePtr->childrenPtr[secIdx]);
+					if (genPtr)
+					{
+						size++;
+						treePtr = (person*)realloc(size * sizeof(person));
+						treePtr[size - 1] = *genPtr;
+						genPtr = treePtr[idx];
+						secIdx = 0;
+					}
+					if (treePtr->NumOfChildren ==secIdx)
+						break;
+				}
+			}
+			work = FALSE;
+		//}
+		free(treePtr);
+	}
+}
