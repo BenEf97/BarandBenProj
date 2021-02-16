@@ -90,7 +90,7 @@ void main()
 			continue;
 		case '5':
 			if (dataBaseCheck(manager.perCount))
-				delete_person(&manager);
+				get_gen(&manager);
 			continue;
 		case '6':
 			if (dataBaseCheck(manager.perCount))
@@ -700,6 +700,11 @@ person* relative_Search(db_mgr* mgr, unsigned long id)
 
 //manager of family tree
 void get_gen(db_mgr* mgr)
+		//1 index is for the tree array, and the second one is for the ChildrenPtr array
+		//tree is the array of all the generations and its reweritten
+		//genptr is the child of person at treePtr[idx]
+		//if genptr is true then treePtr[idx+1]=genptr
+		//repeat
 {
 	person* perPtr;
 	person* genPtr;
@@ -708,50 +713,51 @@ void get_gen(db_mgr* mgr)
 	perPtr = ptrForPerson(mgr);
 	if (perPtr)
 	{
-		int sizeTree = 1;
-		treePtr = (person*)malloc(sizeTree * sizeof(person));
+		int treeSize = 1;
+		treePtr = (person*)malloc(treeSize * sizeof(person));
 		treePtr[0] = *perPtr;
 		//while (work) compare to parent id
 		//{
 
-		//1 index is for the tree array, and the second one is for the ChildrenPtr array
-		//tree is the array of all the generations and its reweritten
-		//genptr is the child of person at treePtr[idx]
-		//if genptr is true then treePtr[idx+1]=genptr
-		//repeat
+		
 		int treeIdx = 0;
 		int childIdx = 0;
+
+		while (1)//later
+		{
+			genPtr = search_id(mgr, treePtr[treeIdx].childrenPtr[childIdx]);
+			if (genPtr)//a child exsits 
 			{
-				while (1)//later
+				if (treeSize == treeIdx + 1)
 				{
-					genPtr = search_id(mgr, treePtr[treeIdx].childrenPtr[childIdx]);
-					if (genPtr)//a child exsits 
+					treeSize++;
+					treePtr = (person*)realloc(treePtr, treeSize * sizeof(person));
+				}
+				treeIdx++;
+				treePtr[treeIdx] = *genPtr;
+				childIdx = 0;
+			}
+			else
+			{
+				treeIdx--;
+				if (treeIdx == 0) break;
+				for (; childIdx < treePtr[treeIdx].NumOfChildren - 1; childIdx++)
+				{
+					if (treePtr[treeIdx].childrenPtr[childIdx] == treePtr[treeIdx + 1].id)
 					{
-						if (sizeTree == treeIdx +1)
-						{
-							sizeTree++;
-							treePtr = (person*)realloc(treePtr,sizeTree * sizeof(person));
-						}
-						treeIdx++;
-						treePtr[treeIdx] = *genPtr;
-						childIdx = 0;
-					}
-					else
-					{
-						treeIdx--;
-						if (treeIdx == 0) break;
-						for (; childIdx < treePtr[treeIdx].NumOfChildren - 1; childIdx++)
-						{
-							if (treePtr[treeIdx].childrenPtr[childIdx] == treePtr[treeIdx + 1].id)
-							{
-								childIdx++;
-								break;
-							}
-						}
+						childIdx++;
+						break;
 					}
 				}
 			}
-			
-		free(treePtr);
+		}
+		if (treePtr[treeSize - 1].NumOfChildren)
+		{
+			treeSize++;
+			for (int idx = 0; idx > treeSize - 2; idx++) free(&treePtr[idx]);
+		}
+		else for (int idx = 0; idx > treeSize - 1; idx++) free(&treePtr[idx]);
+		//free(treePtr);
+		printf("There are %d generations in the family\n", treeSize);
 	}
 }
