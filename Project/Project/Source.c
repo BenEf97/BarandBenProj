@@ -91,6 +91,10 @@ void main()
 			if (dataBaseCheck(manager.perCount))
 				print_db(&manager);
 			continue;
+		case '7':
+			if (dataBaseCheck(manager.perCount))
+				search_by_name(&manager);
+			continue;
 		case '8':
 			quit(&manager);
 			break;
@@ -153,7 +157,6 @@ void init_db(db_mgr* mgr)
 	mgr->per = (person*)malloc(mgr->userCount * sizeof(person));
 	if (mgr->per == NULL)
 		abort_Program();
-	//	printf("Error! Out of memory!");
 }
 
 
@@ -175,8 +178,8 @@ person* db_MemoryRealloc(db_mgr* mgr1)
 			if (mgr2.per == NULL)
 				abort_Program();
 		}
-		if (mgr1->perCount > 1)
-		{
+		//if (mgr1->perCount > 1)
+		//{
 			if (mgr1->per[0].id)//if add
 			{
 				for (int i = 0; i < mgr1->perCount - 1; i++)
@@ -197,7 +200,7 @@ person* db_MemoryRealloc(db_mgr* mgr1)
 				free(mgr1->per);
 			}
 			return mgr2.per;
-		}
+		//}
 	}
 }
 
@@ -619,7 +622,7 @@ void search_by_name(db_mgr* mgr)
 	char lastName[100];
 	gets(firstName);
 	fseek(stdin, 0, SEEK_END);
-	fets(lastName);
+	gets(lastName);
 	fseek(stdin, 0, SEEK_END);
 	person* relative;
 	for (int idx=0;idx<mgr->perCount-1;idx++)
@@ -631,13 +634,13 @@ void search_by_name(db_mgr* mgr)
 				print_person(&mgr->per[idx]);
 				break;
 			}
-			relative = parent_Exisitence(mgr, mgr->per[idx].FatherId);
+			relative = relative_Search(mgr, mgr->per[idx].FatherId);
 			if (strcmp(relative->name,firstName)==0)
 			{
 				print_person(relative);
 				break;
 			}
-			relative = parent_Exisitence(mgr, mgr->per[idx].MotherId);
+			relative = relative_Search(mgr, mgr->per[idx].MotherId);
 			if (strcmp(relative->name, firstName)==0)
 			{
 				print_person(relative);
@@ -647,7 +650,7 @@ void search_by_name(db_mgr* mgr)
 			{
 				for (int secIdx = 0; secIdx < mgr->per[idx].NumOfChildren; secIdx++)
 				{
-					relative = relative_search(mgr, mgr->per[idx].childrenPtr[secIdx]);
+					relative = relative_Search(mgr, mgr->per[idx].childrenPtr[secIdx]);
 					if (strcmp(relative->name, firstName)==0)
 					{
 						print_person(relative);
@@ -655,11 +658,8 @@ void search_by_name(db_mgr* mgr)
 					}
 				}
 			}
-
 		}
 	}
-
-	//i'm thinking about using a related person
 }
 
 person* relative_Search(db_mgr* mgr, unsigned long id)
@@ -671,6 +671,7 @@ person* relative_Search(db_mgr* mgr, unsigned long id)
 		{
 			return relative;
 		}
+		else return NULL;
 	}
 	else return NULL;
 }
