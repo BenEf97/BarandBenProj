@@ -64,6 +64,8 @@ person* relative_Search(db_mgr* mgr, unsigned long id);
 int search_by_name(db_mgr* mgr);
 void get_gen(db_mgr* mgr);
 
+/*Main function, greets the user and asks for initial data base size. Using all the main functions in the program.
+All the function except for add person will only work if the data base is not empty.*/
 void main()
 {
 	db_mgr manager = { NULL,0, 0};
