@@ -39,7 +39,7 @@ person* db_MemoryRealloc(db_mgr* mgr1);
 void init_ChildPtr(person* per);
 char intAsChar(int a);
 void add_person(db_mgr* mgr);
-char* enterName();
+char* enterName();//turn into void
 void arrangeId(db_mgr* mgr);
 void swapPer(person* per1, person* per2);
 unsigned long idInputCheck();
@@ -241,10 +241,10 @@ person* db_MemoryRealloc(db_mgr* mgr1)
 }
 
 //If person deleted, the parent get their pointer to their index deleted, and reallocated with less memory.
-long* realloc_ChildPtr(person* per)
+long* realloc_ChildPtr(person* per)//check if correct
 {
 	person newPer;
-	newPer.NumOfChildren = per->NumOfChildren;
+	newPer.NumOfChildren = per->NumOfChildren;//swap lines
 	init_ChildPtr(&newPer);
 	for (int idx = 0; idx < per->NumOfChildren; idx++)
 	{
@@ -300,7 +300,7 @@ void add_person(db_mgr* mgr)
 	printf("Please enter your mother's ID: ");
 	mgr->per[index].MotherId = idInputCheck();
 	printf("Please enter the number of children you have: ");
-	int numofchildrenInt;
+	int numofchildrenInt;//move to the beginning
 	scanf("%d",&numofchildrenInt);
 	mgr->per[index].NumOfChildren = intAsChar(numofchildrenInt);
 	if (mgr->per[index].NumOfChildren > 0)
@@ -614,7 +614,7 @@ void db_Free(db_mgr* mgr)
 int search_by_name(db_mgr* mgr)
 {
 	printf("**Search By Name**\n");
-	char firstName[100];
+	char firstName[100];//change to the beginning
 	char lastName[100];
 	printf("Please enter first name: ");
 	gets(firstName);
@@ -758,4 +758,5 @@ void get_gen(db_mgr* mgr)
 		free(treePtr);
 		printf("There are %d generations in the family\n", treeSize);
 	}
+	else printf("Invalid ID! Please try again later.\n");
 }
