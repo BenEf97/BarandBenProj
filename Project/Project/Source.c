@@ -49,6 +49,7 @@ unsigned long idInputCheck();
 DateOfBirth inputDate();
 int yearLeapChk(int year);
 int dateChk(int mm, int dd, int yy);
+unsigned long  idInputRelative();
 int dataBaseCheck(int perCount);
 person* search_id(db_mgr* mgr, unsigned long id);
 person* ptrForPerson(db_mgr* mgr);
@@ -297,23 +298,18 @@ void add_person(db_mgr* mgr)
 		mgr->per = db_MemoryRealloc(mgr);
 	printf("Please enter a person details:\n");
 	printf("Please enter ID: ");
-	mgr->per[index].id = idInput();
-	while ((long)mgr->per[index].id <= 0)
-	{
-		printf("Invalid ID! Please try again: ");
-		mgr->per[index].id = idInput();
-	}
+	mgr->per[index].id = idInputCheck();
 	printf("Please enter name: ");
 	mgr->per[index].name = enterName();
 	printf("Please enter last name: ");
 	mgr->per[index].family = enterName();
 	mgr->per[index].date = inputDate();
 	printf("Please enter your partner's ID: ");
-	mgr->per[index].partnerId = idInputCheck();
+	mgr->per[index].partnerId = idInputRelative ();
 	printf("Please enter your father's ID: ");
-	mgr->per[index].FatherId = idInputCheck();
+	mgr->per[index].FatherId = idInputRelative();
 	printf("Please enter your mother's ID: ");
-	mgr->per[index].MotherId = idInputCheck();
+	mgr->per[index].MotherId = idInputRelative();
 	printf("Please enter the number of children you have: ");
 	scanf("%d",&numofchildrenInt);
 	fseek(stdin, 0, SEEK_END);
@@ -397,11 +393,11 @@ int yearLeapChk(int year)
 	else return FALSE;
 }
 
-//Getting and checking user's id input for using functions except when adding a person
+//Getting and checking user's id validation
 unsigned long idInputCheck()
 {
 	unsigned long id = idInput();
-	while ((long)id<0)
+	while ((long)id<=0)
 	{
 		printf("Invalid input, please try again: ");
 		id = idInput();
@@ -414,6 +410,17 @@ unsigned long idInput()
 	unsigned long id;
 	scanf("%ld", &id);
 	fseek(stdin, 0, SEEK_END);
+	return id;
+}
+//In add person the user may enter 0
+unsigned long  idInputRelative()
+{
+	unsigned long id = idInput();
+	while ((long)id < 0)
+	{
+		printf("Invalid input, please try again: ");
+		id = idInput();
+	}
 	return id;
 }
 //Getting input from the user and allocating name
@@ -581,7 +588,8 @@ void delete_person(db_mgr* mgr)
 		if (ptr->partnerId)
 		{
 			person* ptrPartner = search_id(mgr, ptr->partnerId);
-			ptrPartner->partnerId = 0;
+			if (ptrPartner)
+				ptrPartner->partnerId = 0;
 		}
 		if (ptr->NumOfChildren)
 		{
