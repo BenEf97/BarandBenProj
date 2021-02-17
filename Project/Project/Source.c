@@ -103,7 +103,6 @@ void main()
 			continue;
 		case '8':
 			quit(&manager);
-			break;
 		}
 	} while (option != '8');
 	system("pause");
