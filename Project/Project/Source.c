@@ -57,7 +57,7 @@ void abort_Program();
 void db_Free(db_mgr* mgr);
 void print_db(db_mgr* mgr);
 person* relative_Search(db_mgr* mgr, unsigned long id);
-void search_by_name(db_mgr* mgr);
+int search_by_name(db_mgr* mgr);
 void get_gen(db_mgr* mgr);
 
 void main()
@@ -270,7 +270,7 @@ char menu()
 	printf("\n\t\t***Database System Menu***\n1. Add person\n2. Search a person\n3. Search parents\n4. Delete a person\n5. Get generation\n6. Print database\n7. Search by name\n8. Quit\n\n");
 	while (TRUE)
 	{
-		fseek(stdin, 0, SEEK_END);
+		//fseek(stdin, 0, SEEK_END);
 		scanf("%c", &choice);
 		fseek(stdin, 0, SEEK_END);
 		if (choice > '0'&&choice < '9') return choice;
@@ -382,7 +382,6 @@ char* enterName()
 	char tmp[100];
 	int size;
 	gets(tmp);
-	fseek(stdin, 0, SEEK_END);
 	size = strlen(tmp);
 	name = (char*)malloc((size + 1)*sizeof(char));
 	if (name == NULL)
@@ -421,7 +420,7 @@ person* search_id(db_mgr* mgr, unsigned long id)
 	{
 		int midIdx = (endIdx+idx) / 2;
 		if (midIdx % 2) midIdx++;
-		while (idx <= endIdx /*&&idx<=midIdx&&midIdx<=endIdx*/)
+		while (idx <= endIdx)
 		{
 			if (ptr[idx].id == id)
 			{
@@ -445,6 +444,7 @@ person* search_id(db_mgr* mgr, unsigned long id)
 				idx = midIdx;
 				endIdx--;
 				midIdx = (endIdx + idx) / 2;
+				if (midIdx % 2) midIdx++;
 			}
 		}
 		return NULL;
@@ -610,17 +610,15 @@ void db_Free(db_mgr* mgr)
 }
 
 //Q12: search_by_name: Prints all the people that match the searched name.
-void search_by_name(db_mgr* mgr)
+int search_by_name(db_mgr* mgr)
 {
 	printf("**Search By Name**\n");
 	char firstName[100];
 	char lastName[100];
 	printf("Please enter first name: ");
 	gets(firstName);
-	fseek(stdin, 0, SEEK_END);
 	printf("Please enter last name: ");
 	gets(lastName);
-	fseek(stdin, 0, SEEK_END);
 	//The function will seek for relatives by the family name to shorten the search, otherwise will search by changing indexs
 	person* relative;
 	for (int idx=0;idx<mgr->perCount-1;idx++)
@@ -630,19 +628,19 @@ void search_by_name(db_mgr* mgr)
 			if (strcmp(mgr->per[idx].name,firstName)==0)
 			{
 				print_person(&mgr->per[idx]);
-				break;
+				return 0;
 			}
 			relative = relative_Search(mgr, mgr->per[idx].FatherId);
 			if (strcmp(relative->name,firstName)==0)
 			{
 				print_person(relative);
-				break;
+				return 0;
 			}
 			relative = relative_Search(mgr, mgr->per[idx].MotherId);
 			if (strcmp(relative->name, firstName)==0)
 			{
 				print_person(relative);
-				break;
+				return 0;
 			}
 			if (mgr->per[idx].NumOfChildren)
 			{
@@ -652,12 +650,13 @@ void search_by_name(db_mgr* mgr)
 					if (strcmp(relative->name, firstName)==0)
 					{
 						print_person(relative);
-						break;
+						return 0;
 					}
 				}
 			}
 		}
 	}
+	printf("The person has not been found! ");
 }
 //Checks that the person have a relative info, and if they do the function will return a pointer for that relative
 person* relative_Search(db_mgr* mgr, unsigned long id)
@@ -701,6 +700,7 @@ void get_gen(db_mgr* mgr)
 				genPtr = search_id(mgr, treePtr[treeIdx].childrenPtr[childIdx]);
 				if (!genPtr)
 				{
+					childIdx++;
 					for (; childIdx < treePtr[treeIdx].NumOfChildren;childIdx++)
 					{
 						genPtr = search_id(mgr, treePtr[treeIdx].childrenPtr[childIdx]);
@@ -735,23 +735,12 @@ void get_gen(db_mgr* mgr)
 						if (genPtr) break;
 					}
 				}
+				//Exits the while loop
 				if (treeIdx == 0 && treePtr[0].childrenPtr[childIdx]==treePtr[1].id) break;
 				for (childIdx=0; childIdx < treePtr[treeIdx].NumOfChildren; childIdx++)
 				{
 					if (treePtr[treeIdx].childrenPtr[childIdx] == treePtr[treeIdx + 1].id)
 					{
-						if (treePtr[treeIdx].NumOfChildren == childIdx)
-						{
-							treeIdx--;
-							for (childIdx = 0; childIdx<treePtr[treeIdx].NumOfChildren; childIdx++)
-							{
-								if (treePtr[treeIdx].childrenPtr[childIdx] == treePtr[treeIdx + 1].id)
-								{
-									childIdx++;
-									break;
-								}
-							}
-						}
 						childIdx++;
 						break;
 					}
