@@ -270,7 +270,6 @@ char menu()
 	printf("\n\t\t***Database System Menu***\n1. Add person\n2. Search a person\n3. Search parents\n4. Delete a person\n5. Get generation\n6. Print database\n7. Search by name\n8. Quit\n\n");
 	while (TRUE)
 	{
-		//fseek(stdin, 0, SEEK_END);
 		scanf("%c", &choice);
 		fseek(stdin, 0, SEEK_END);
 		if (choice > '0'&&choice < '9') return choice;
