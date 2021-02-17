@@ -126,7 +126,7 @@ void print_db(db_mgr* mgr)
 	}
 }
 
-//If an allocation fails, the program will display an error output and exits
+//If an allocation fails, the program will display an error output and exits the program
 void abort_Program()
 {
 	printf("Error! out of memory!");
@@ -412,7 +412,7 @@ unsigned long idInput()
 	fseek(stdin, 0, SEEK_END);
 	return id;
 }
-//In add person the user may enter 0
+//In add person the user may enter 0 if a relative doesn't exist
 unsigned long  idInputRelative()
 {
 	unsigned long id = idInput();
@@ -745,7 +745,7 @@ void get_gen(db_mgr* mgr)
 	person* perPtr;
 	person* genPtr;
 	person* treePtr;
-	printf("**Get Gen**\nPlease enter ID: ");
+	printf("**Get Gen**\nPlease enter an ID to get the number of generations: ");
 	perPtr = ptrForPerson(mgr);
 	if (perPtr)
 	{
