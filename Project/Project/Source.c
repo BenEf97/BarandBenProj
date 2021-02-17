@@ -63,6 +63,7 @@ void get_gen(db_mgr* mgr);
 void main()
 {
 	db_mgr manager = { NULL,0, 0};
+	printf("\t\t***Data Base Manager STARTED***\n\n");
 	printf("Please enter how many people you wish to be in the data base: ");
 	scanf("%d", &manager.userCount);
 	fseek(stdin, 0, SEEK_END);
@@ -556,6 +557,7 @@ void delete_person(db_mgr* mgr)
 		arrangeId(mgr);
 		mgr->perCount--;
 		mgr->per=db_MemoryRealloc(mgr);
+		printf("The person has been deleted succsessfully!\n");
 	}
 }
 //Deletes persons id from the childrenPtr array in parents of the person.
@@ -656,7 +658,7 @@ int search_by_name(db_mgr* mgr)
 			}
 		}
 	}
-	printf("The person has not been found! ");
+	printf("The person has not been found! Please check if the name is correct.\n");
 }
 //Checks that the person have a relative info, and if they do the function will return a pointer for that relative
 person* relative_Search(db_mgr* mgr, unsigned long id)
