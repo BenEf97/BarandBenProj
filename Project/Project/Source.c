@@ -204,7 +204,7 @@ person* db_MemoryRealloc(db_mgr* mgr1)
 		{
 			mgr2.per = (person*)malloc(mgr1->userCount * sizeof(person));
 			if (mgr2.per == NULL)
-				abort_Program;
+				abort_Program();
 		}
 	}
 
@@ -238,6 +238,7 @@ person* db_MemoryRealloc(db_mgr* mgr1)
 	return mgr2.per;
 }
 
+//Free the person at 0 index when using delete person
 void single_PersonFree(db_mgr* mgr)
 {
 	free(mgr->per[0].childrenPtr);
@@ -265,9 +266,7 @@ void init_ChildPtr(person* per)
 {
 	per->childrenPtr = (long*)malloc(per->NumOfChildren * sizeof(long));
 	if (per->childrenPtr == NULL)
-	{
 		abort_Program();
-	}
 }
 
 //Q4: Menu: Checks the input and returns the value that entered
@@ -291,6 +290,7 @@ void add_person(db_mgr* mgr)
 	int index = mgr->perCount;
 	printf("**Add Person**\n");
 	mgr->perCount++;
+	//If the user needs memory beyond the limit it will be allocated.
 	if (mgr->perCount > mgr->userCount)
 		mgr->per = db_MemoryRealloc(mgr);
 	printf("Please enter a person details:\n");
@@ -324,6 +324,7 @@ void add_person(db_mgr* mgr)
 	mgr->per[index].NumOfChildren = intAsChar(numofchildrenInt);
 	if (mgr->per[index].NumOfChildren > 0)
 	{
+		//If there are children, memory will be allocated
 		init_ChildPtr(&mgr->per[index]);
 		for (int i = 0; i < mgr->per[index].NumOfChildren; i++)
 		{
@@ -335,7 +336,7 @@ void add_person(db_mgr* mgr)
 	arrangeId(mgr);
 }
 
-//Checks if the string input is valid
+//Checks if the string input is valid by finding invalid characters
 int strInputCheck(char str[])
 {
 	int length = strlen(str);
@@ -413,7 +414,7 @@ unsigned long idInput()
 	fseek(stdin, 0, SEEK_END);
 	return id;
 }
-//Getting input from the user and allocating name for add_person
+//Getting input from the user and allocating name
 char* enterName()
 {
 	char* name;
@@ -452,9 +453,10 @@ void swapPer(person* per1, person* per2)
 	*per1 = *per2;
 	*per2 = temp;
 }
-//Q6: search_id: Gets id and returns a pointer for a person with the same id. If fails it will return NULL
+//Q6: search_id: Gets id and returns a pointer for a person with the same id. If fails it will return NULL.
 person* search_id(db_mgr* mgr, unsigned long id)
 {
+	//Splitting the index range will help to find faster
 	person* ptr = mgr->per;
 	int endIdx = mgr->perCount - 1;
 	int idx = 0;
@@ -508,13 +510,13 @@ person* ptrForPerson(db_mgr* mgr)
 //Q7: search_person: Finds a person from the database by id and prints his info.
 void search_person(db_mgr* mgr)
 {
-		person* ptr;
-		printf("**Search Person**\nPlease enter ID: ");
-		ptr = ptrForPerson(mgr);
-		if (ptr != NULL)
-		{
-			print_person(ptr);
-		}
+	person* ptr;
+	printf("**Search Person**\nPlease enter ID: ");
+	ptr = ptrForPerson(mgr);
+	if (ptr != NULL)
+	{
+		print_person(ptr);
+	}
 }
 //Q8: search_parents: Finds parents of a pesron in the database and prints thier info.
 void search_parents(db_mgr* mgr)
@@ -611,10 +613,9 @@ void child_Deleter(person* parent,person* child)
 			position = idx;
 			parent->childrenPtr[idx] = 0;
 		}
-
 	}
 	//Temp is used swap the positios int he children pointer array
-	long* temp;
+	long temp;
 	for (; position < parent->NumOfChildren - 1; position++)
 	{
 
@@ -623,6 +624,7 @@ void child_Deleter(person* parent,person* child)
 		parent->childrenPtr[position + 1] = temp;
 	}
 	parent->NumOfChildren--;
+	//If there are no more children the array will be free. Else new memory will be allocated
 	if (parent->NumOfChildren == 0)
 	{
 		free(parent->childrenPtr);
@@ -742,7 +744,8 @@ void get_gen(db_mgr* mgr)
 		//The final size of the array will be the number of the generation
 		treePtr = (person*)malloc(treeSize * sizeof(person));
 		if (!treePtr)
-			abort_Program;
+			abort_Program();
+		//Using 2 indexes, one for the tree array and one for moving on the children pointer array in each person struct
 		int treeIdx = 0;
 		int childIdx = 0;
 		treePtr[0] = *perPtr;
@@ -782,13 +785,14 @@ void get_gen(db_mgr* mgr)
 				if (treeIdx) treeIdx--;
 				else
 				{
+					//When returning to the origin it will find the last child at the childptr array
 					for (childIdx = treePtr[treeIdx].NumOfChildren-1;0<=childIdx; childIdx--)
 					{
 						genPtr = search_id(mgr, treePtr[treeIdx].childrenPtr[childIdx]);
 						if (genPtr) break;
 					}
 				}
-				//Exits the while loop
+				//Exits the while loop only if there are no more children left, and the index is at the person
 				if (treeIdx == 0 && treePtr[0].childrenPtr[childIdx]==treePtr[1].id) break;
 				for (childIdx=0; childIdx < treePtr[treeIdx].NumOfChildren; childIdx++)
 				{
@@ -808,6 +812,6 @@ void get_gen(db_mgr* mgr)
 		}
 		else for (int idx = 0; idx > treeSize - 1; idx++) free(&treePtr[idx]);
 		free(treePtr);
-		printf("There are %d generations in the family\n", treeSize);
+		printf("There are %d generations in the family.\n", treeSize);
 	}
 }
